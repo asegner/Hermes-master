@@ -25,6 +25,9 @@ typedef struct queued_packet {
 @property (nonatomic) BOOL didSuspendDataTask;
 @property (nonatomic) BOOL streamAborted;
 @property (nonatomic, strong) NSRecursiveLock *lock;
+
+- (void)freeQueuedPackets;
+- (AudioBufferManagerEnqueueResult)flushCurrentBuffer;
 @end
 
 @implementation AudioBufferManager
@@ -74,18 +77,21 @@ typedef struct queued_packet {
 
 - (void)reset {
     [_lock lock];
-    _packetsFilled = 0;
-    _bytesFilled = 0;
-    _fillBufferIndex = 0;
-    _buffersUsed = 0;
-    _waitingOnBuffer = NO;
-    _didSuspendDataTask = NO;
-    _streamAborted = NO;
-    if (_inuse) {
-        memset(_inuse, 0, sizeof(BOOL) * _bufferCount);
+    @try {
+        _packetsFilled = 0;
+        _bytesFilled = 0;
+        _fillBufferIndex = 0;
+        _buffersUsed = 0;
+        _waitingOnBuffer = NO;
+        _didSuspendDataTask = NO;
+        _streamAborted = NO;
+        if (_inuse) {
+            memset(_inuse, 0, sizeof(BOOL) * _bufferCount);
+        }
+        [self freeQueuedPackets];
+    } @finally {
+        [_lock unlock];
     }
-    [self freeQueuedPackets];
-    [_lock unlock];
 }
 
 - (void)freeQueuedPackets {
@@ -113,246 +119,255 @@ typedef struct queued_packet {
 - (AudioBufferManagerEnqueueResult)handlePacketData:(const void *)data
                                         description:(AudioStreamPacketDescription)desc {
     [_lock lock];
-    if (_streamAborted) {
-        [_lock unlock];
-        return AudioBufferManagerEnqueueResultFailed;
-    }
-
-    UInt32 packetSize = desc.mDataByteSize;
-    if (packetSize == 0) {
-        [_lock unlock];
-        return AudioBufferManagerEnqueueResultCommitted;
-    }
-
-    if (packetSize > _packetBufferSize) {
-        [_lock unlock];
-        return AudioBufferManagerEnqueueResultFailed;
-    }
-
-    if (_packetBufferSize - _bytesFilled < packetSize) {
-        AudioBufferManagerEnqueueResult flushResult = [self flushCurrentBuffer];
-        if (flushResult != AudioBufferManagerEnqueueResultCommitted) {
-            [_lock unlock];
-            return flushResult;
+    @try {
+        if (_streamAborted) {
+            return AudioBufferManagerEnqueueResultFailed;
         }
-        NSAssert(_bytesFilled == 0, @"bytesFilled should be zero after flushing buffer.");
-        NSAssert(_packetBufferSize >= packetSize, @"Buffer size must be large enough for packet.");
-    }
 
-    AudioStreamPacketDescription packetDesc = desc;
-    packetDesc.mStartOffset = _bytesFilled;
+        UInt32 packetSize = desc.mDataByteSize;
+        if (packetSize == 0) {
+            return AudioBufferManagerEnqueueResultCommitted;
+        }
 
-    if (_delegate) {
-        [_delegate audioBufferManager:self
-                       copyPacketData:data
-                           packetSize:packetSize
-                        toBufferIndex:_fillBufferIndex
-                               offset:_bytesFilled];
-    }
+        if (packetSize > _packetBufferSize) {
+            return AudioBufferManagerEnqueueResultFailed;
+        }
 
-    _packetDescs[_packetsFilled] = packetDesc;
-    _bytesFilled += packetSize;
-    _packetsFilled++;
+        if (_packetBufferSize - _bytesFilled < packetSize) {
+            AudioBufferManagerEnqueueResult flushResult = [self flushCurrentBuffer];
+            if (flushResult != AudioBufferManagerEnqueueResultCommitted) {
+                return flushResult;
+            }
+            NSAssert(_bytesFilled == 0, @"bytesFilled should be zero after flushing buffer.");
+            NSAssert(_packetBufferSize >= packetSize, @"Buffer size must be large enough for packet.");
+        }
 
-    if (_packetsFilled >= _maxPacketDescs) {
-        AudioBufferManagerEnqueueResult result = [self flushCurrentBuffer];
+        AudioStreamPacketDescription packetDesc = desc;
+        packetDesc.mStartOffset = _bytesFilled;
+
+        if (_delegate) {
+            [_delegate audioBufferManager:self
+                           copyPacketData:data
+                               packetSize:packetSize
+                            toBufferIndex:_fillBufferIndex
+                                   offset:_bytesFilled];
+        }
+
+        _packetDescs[_packetsFilled] = packetDesc;
+        _bytesFilled += packetSize;
+        _packetsFilled++;
+
+        if (_packetsFilled >= _maxPacketDescs) {
+            return [self flushCurrentBuffer];
+        }
+
+        return AudioBufferManagerEnqueueResultCommitted;
+    } @finally {
         [_lock unlock];
-        return result;
     }
-
-    [_lock unlock];
-    return AudioBufferManagerEnqueueResultCommitted;
 }
 
 - (AudioBufferManagerEnqueueResult)flushCurrentBuffer {
     [_lock lock];
-    if (_streamAborted) {
+    @try {
+        if (_streamAborted) {
+            _bytesFilled = 0;
+            _packetsFilled = 0;
+            return AudioBufferManagerEnqueueResultFailed;
+        }
+
+        if (_packetsFilled == 0) {
+            return AudioBufferManagerEnqueueResultCommitted;
+        }
+
+        NSAssert(_fillBufferIndex < _bufferCount, @"fillBufferIndex is out of range.");
+        if (_inuse[_fillBufferIndex]) {
+            _waitingOnBuffer = YES;
+            if (!_bufferInfinite && !_didSuspendDataTask && _delegate) {
+                [_delegate audioBufferManagerSuspendData:self];
+                _didSuspendDataTask = YES;
+            }
+            return AudioBufferManagerEnqueueResultBlocked;
+        }
+
+        _inuse[_fillBufferIndex] = YES;
+        _buffersUsed++;
+
+        OSStatus enqueueError = noErr;
+        if (_delegate) {
+            enqueueError = [_delegate audioBufferManager:self
+                                enqueueBufferAtIndex:_fillBufferIndex
+                                         bytesFilled:_bytesFilled
+                                       packetsFilled:_packetsFilled
+                                  packetDescriptions:_packetDescs];
+        }
+
+        if (enqueueError != noErr) {
+            _inuse[_fillBufferIndex] = NO;
+            if (_buffersUsed > 0) {
+                _buffersUsed--;
+            }
+            return AudioBufferManagerEnqueueResultFailed;
+        }
+
+        if (_delegate && [_delegate audioBufferManagerShouldStartQueue:self]) {
+            [_delegate audioBufferManagerStartQueue:self];
+        }
+
+        _fillBufferIndex++;
+        if (_fillBufferIndex >= _bufferCount) {
+            _fillBufferIndex = 0;
+        }
         _bytesFilled = 0;
         _packetsFilled = 0;
-        [_lock unlock];
-        return AudioBufferManagerEnqueueResultFailed;
-    }
 
-    if (_packetsFilled == 0) {
-        [_lock unlock];
+        if (_inuse[_fillBufferIndex]) {
+            _waitingOnBuffer = YES;
+            if (!_bufferInfinite && !_didSuspendDataTask && _delegate) {
+                [_delegate audioBufferManagerSuspendData:self];
+                _didSuspendDataTask = YES;
+            }
+            return AudioBufferManagerEnqueueResultBlocked;
+        }
+
         return AudioBufferManagerEnqueueResultCommitted;
-    }
-
-    NSAssert(_fillBufferIndex < _bufferCount, @"fillBufferIndex is out of range.");
-    if (_inuse[_fillBufferIndex]) {
-        _waitingOnBuffer = YES;
-        if (!_bufferInfinite && !_didSuspendDataTask && _delegate) {
-            [_delegate audioBufferManagerSuspendData:self];
-            _didSuspendDataTask = YES;
-        }
+    } @finally {
         [_lock unlock];
-        return AudioBufferManagerEnqueueResultBlocked;
     }
-
-    _inuse[_fillBufferIndex] = YES;
-    _buffersUsed++;
-
-    OSStatus enqueueError = noErr;
-    if (_delegate) {
-        enqueueError = [_delegate audioBufferManager:self
-                            enqueueBufferAtIndex:_fillBufferIndex
-                                     bytesFilled:_bytesFilled
-                                   packetsFilled:_packetsFilled
-                              packetDescriptions:_packetDescs];
-    }
-
-    if (enqueueError != noErr) {
-        _inuse[_fillBufferIndex] = NO;
-        if (_buffersUsed > 0) {
-            _buffersUsed--;
-        }
-        [_lock unlock];
-        return AudioBufferManagerEnqueueResultFailed;
-    }
-
-    if (_delegate && [_delegate audioBufferManagerShouldStartQueue:self]) {
-        [_delegate audioBufferManagerStartQueue:self];
-    }
-
-    _fillBufferIndex++;
-    if (_fillBufferIndex >= _bufferCount) {
-        _fillBufferIndex = 0;
-    }
-    _bytesFilled = 0;
-    _packetsFilled = 0;
-
-    if (_inuse[_fillBufferIndex]) {
-        _waitingOnBuffer = YES;
-        if (!_bufferInfinite && !_didSuspendDataTask && _delegate) {
-            [_delegate audioBufferManagerSuspendData:self];
-            _didSuspendDataTask = YES;
-        }
-        [_lock unlock];
-        return AudioBufferManagerEnqueueResultBlocked;
-    }
-
-    [_lock unlock];
-    return AudioBufferManagerEnqueueResultCommitted;
 }
 
 - (void)cachePacketData:(const void *)data
                packetSize:(UInt32)packetSize
               description:(AudioStreamPacketDescription)desc {
     [_lock lock];
-    queued_packet_t *packet = malloc(sizeof(queued_packet_t) + packetSize);
-    if (!packet) {
+    @try {
+        queued_packet_t *packet = malloc(sizeof(queued_packet_t) + packetSize);
+        if (!packet) {
+            return;
+        }
+
+        packet->next = NULL;
+        packet->desc = desc;
+        packet->desc.mStartOffset = 0;
+        if (packetSize > 0) {
+            memcpy(packet->data, data, packetSize);
+        }
+
+        if (_queuedHead == NULL) {
+            _queuedHead = _queuedTail = packet;
+        } else {
+            _queuedTail->next = packet;
+            _queuedTail = packet;
+        }
+    } @finally {
         [_lock unlock];
-        return;
     }
-
-    packet->next = NULL;
-    packet->desc = desc;
-    packet->desc.mStartOffset = 0;
-    if (packetSize > 0) {
-        memcpy(packet->data, data, packetSize);
-    }
-
-    if (_queuedHead == NULL) {
-        _queuedHead = _queuedTail = packet;
-    } else {
-        _queuedTail->next = packet;
-        _queuedTail = packet;
-    }
-    [_lock unlock];
 }
 
 - (BOOL)hasQueuedPackets {
     [_lock lock];
-    BOOL hasPackets = _queuedHead != NULL;
-    [_lock unlock];
-    return hasPackets;
+    @try {
+        return _queuedHead != NULL;
+    } @finally {
+        [_lock unlock];
+    }
 }
 
 - (void)clearQueuedPackets {
     [_lock lock];
-    [self freeQueuedPackets];
-    _waitingOnBuffer = NO;
-    if (_didSuspendDataTask) {
-        _didSuspendDataTask = NO;
+    @try {
+        [self freeQueuedPackets];
+        _waitingOnBuffer = NO;
+        if (_didSuspendDataTask) {
+            _didSuspendDataTask = NO;
+        }
+    } @finally {
+        [_lock unlock];
     }
-    [_lock unlock];
 }
 
 - (void)abortPendingData {
     [_lock lock];
-    _streamAborted = YES;
-    _bytesFilled = 0;
-    _packetsFilled = 0;
-    _waitingOnBuffer = NO;
-    if (_didSuspendDataTask && _delegate) {
-        [_delegate audioBufferManagerResumeData:self];
+    @try {
+        _streamAborted = YES;
+        _bytesFilled = 0;
+        _packetsFilled = 0;
+        _waitingOnBuffer = NO;
+        if (_didSuspendDataTask && _delegate) {
+            [_delegate audioBufferManagerResumeData:self];
+        }
+        _didSuspendDataTask = NO;
+        [self freeQueuedPackets];
+    } @finally {
+        [_lock unlock];
     }
-    _didSuspendDataTask = NO;
-    [self freeQueuedPackets];
-    [_lock unlock];
 }
 
 - (void)processQueuedPackets {
     [_lock lock];
-    if (_streamAborted) {
-        [self freeQueuedPackets];
+    @try {
+        if (_streamAborted) {
+            [self freeQueuedPackets];
+            return;
+        }
+
+        queued_packet_t *current = _queuedHead;
+        while (current && !_waitingOnBuffer) {
+            // Unlock while handling packet data to avoid re-entrancy issues if handlePacketData calls out
+            // But handlePacketData also locks, so we need to be careful.
+            // Since we are using NSRecursiveLock, it's fine to call handlePacketData which also locks.
+            
+            AudioBufferManagerEnqueueResult result =
+                [self handlePacketData:current->data description:current->desc];
+            if (result == AudioBufferManagerEnqueueResultFailed) {
+                break;
+            }
+            if (result == AudioBufferManagerEnqueueResultBlocked) {
+                break;
+            }
+
+            queued_packet_t *next = current->next;
+            free(current);
+            current = next;
+        }
+
+        _queuedHead = current;
+        if (_queuedHead == NULL) {
+            _queuedTail = NULL;
+            if (_delegate && !_bufferInfinite && _didSuspendDataTask) {
+                [_delegate audioBufferManagerResumeData:self];
+                _didSuspendDataTask = NO;
+            }
+        }
+    } @finally {
         [_lock unlock];
-        return;
     }
-
-    queued_packet_t *current = _queuedHead;
-    while (current && !_waitingOnBuffer) {
-        // Unlock while handling packet data to avoid re-entrancy issues if handlePacketData calls out
-        // But handlePacketData also locks, so we need to be careful.
-        // Since we are using NSRecursiveLock, it's fine to call handlePacketData which also locks.
-        
-        AudioBufferManagerEnqueueResult result =
-            [self handlePacketData:current->data description:current->desc];
-        if (result == AudioBufferManagerEnqueueResultFailed) {
-            break;
-        }
-        if (result == AudioBufferManagerEnqueueResultBlocked) {
-            break;
-        }
-
-        queued_packet_t *next = current->next;
-        free(current);
-        current = next;
-    }
-
-    _queuedHead = current;
-    if (_queuedHead == NULL) {
-        _queuedTail = NULL;
-        if (_delegate && !_bufferInfinite && _didSuspendDataTask) {
-            [_delegate audioBufferManagerResumeData:self];
-            _didSuspendDataTask = NO;
-        }
-    }
-    [_lock unlock];
 }
 
 - (BOOL)bufferCompletedAtIndex:(UInt32)index {
     [_lock lock];
-    NSAssert(index < _bufferCount, @"Buffer index out of range.");
-    NSAssert(_inuse[index], @"Completed buffer was not marked as in use.");
+    @try {
+        NSAssert(index < _bufferCount, @"Buffer index out of range.");
+        NSAssert(_inuse[index], @"Completed buffer was not marked as in use.");
 
-    _inuse[index] = NO;
-    if (_buffersUsed > 0) {
-        _buffersUsed--;
-    }
+        _inuse[index] = NO;
+        if (_buffersUsed > 0) {
+            _buffersUsed--;
+        }
 
-    BOOL wasWaiting = _waitingOnBuffer;
-    if (wasWaiting) {
-        _waitingOnBuffer = NO;
-    }
+        BOOL wasWaiting = _waitingOnBuffer;
+        if (wasWaiting) {
+            _waitingOnBuffer = NO;
+        }
 
-    if (_streamAborted) {
+        if (_streamAborted) {
+            return NO;
+        }
+
+        return wasWaiting;
+    } @finally {
         [_lock unlock];
-        return NO;
     }
-
-    [_lock unlock];
-    return wasWaiting;
 }
 
 @end

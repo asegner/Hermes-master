@@ -292,6 +292,10 @@ static NSString *hierrs[] = {
 }
 
 - (BOOL)doUserLogin:(NSString *)username password:(NSString *)password callback:(PandoraCallback)callback {
+  if (username == nil || password == nil) {
+    NSLogd(@"Error: Attempted to login with nil username or password.");
+    return NO;
+  }
   if (partner_id == nil) {
     // Get partner ID then reinvoke this method.
     return [self doPartnerLogin:^() {
@@ -899,6 +903,10 @@ static NSString *hierrs[] = {
   }
   NSString *user = [HMSAppDelegate getSavedUsername];
   NSString *pass = [HMSAppDelegate getSavedPassword];
+  if (user == nil || pass == nil) {
+      NSLogd(@"Error: No saved credentials found for re-authentication.");
+      return NO;
+  }
   return [self authenticate:user password:pass request:req];
 }
 

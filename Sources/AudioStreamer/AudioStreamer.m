@@ -169,7 +169,7 @@ static void MyAudioQueueIsRunningCallback(void *inUserData, AudioQueueRef inAQ,
 
 + (AudioStreamer*) streamWithURL:(NSURL*)url {
     assert(url != nil);
-    AudioStreamer *stream = [[AudioStreamer alloc] init];
+    AudioStreamer *stream = [[self alloc] init];
     stream->url = url;
     stream->bufferCnt  = kDefaultNumAQBufs;
     stream->bufferSize = kDefaultAQDefaultBufSize;
@@ -725,7 +725,7 @@ static void MyAudioQueueIsRunningCallback(void *inUserData, AudioQueueRef inAQ,
     return;
   }
 
-  BOOL isTransient = [AudioStreamer isErrorCodeTransient:anErrorCode networkError:networkError];
+  BOOL isTransient = [[self class] isErrorCodeTransient:anErrorCode networkError:networkError];
   BOOL willRetry = isTransient && self.retryAttemptCount < self.maxRetryCount;
   NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithCapacity:3];
   userInfo[ASStreamErrorCodeKey] = @(anErrorCode);
@@ -1027,10 +1027,9 @@ didReceiveData:(NSData *)data {
 
   OSStatus parseErr;
   if (discontinuous) {
-    parseErr = AudioFileStreamParseBytes(audioFileStream, (UInt32)length, bytes,
-                                         kAudioFileStreamParseFlag_Discontinuity);
+    parseErr = [self parseBytes:bytes length:(UInt32)length flags:kAudioFileStreamParseFlag_Discontinuity];
   } else {
-    parseErr = AudioFileStreamParseBytes(audioFileStream, (UInt32)length, bytes, 0);
+    parseErr = [self parseBytes:bytes length:(UInt32)length flags:0];
   }
 
   if (parseErr) {
@@ -1419,16 +1418,22 @@ packetDescriptions:(AudioStreamPacketDescription*)inPacketDescriptions {
         dispatch_async(dispatch_get_main_queue(), ^{
             [self setState:AS_PLAYING];
         });
-    } else {
-        UInt32 running;
-        UInt32 output = sizeof(running);
-        OSStatus err = AudioQueueGetProperty(audioQueue, kAudioQueueProperty_IsRunning,
-                                           &running, &output);
-        if (!err && !running && !currentSeeking) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self setState:AS_DONE];
-            });
-        }
+        return;
+    }
+    
+    if (!self.hasAudioQueueStarted || audioQueue == NULL) {
+        // Ignore spurious callbacks that can arrive on Intel before the queue starts.
+        return;
+    }
+    
+    UInt32 running;
+    UInt32 output = sizeof(running);
+    OSStatus err = AudioQueueGetProperty(audioQueue, kAudioQueueProperty_IsRunning,
+                                         &running, &output);
+    if (!err && !running && !currentSeeking) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self setState:AS_DONE];
+        });
     }
 }
 
@@ -1475,6 +1480,7 @@ packetDescriptions:(AudioStreamPacketDescription*)inPacketDescriptions {
     if (requiredBuffers == 0) {
       requiredBuffers = 1;
     }
+    NSLog(@"[Debug] startupBufferedDuration: %f, kStartupBufferSeconds: %f, buffersUsed: %u, required: %u", self.startupBufferedDuration, kStartupBufferSeconds, (unsigned int)manager.buffersUsed, (unsigned int)requiredBuffers);
     if (self.startupBufferedDuration >= kStartupBufferSeconds &&
         manager.buffersUsed >= requiredBuffers) {
       self.startupBufferSatisfied = YES;
@@ -1486,6 +1492,7 @@ packetDescriptions:(AudioStreamPacketDescription*)inPacketDescriptions {
 }
 
 - (void)audioBufferManagerStartQueue:(AudioBufferManager *)manager {
+    NSLog(@"[Debug] audioBufferManagerStartQueue called");
   err = AudioQueueStart(audioQueue, NULL);
   if (err) {
     [self failWithErrorCode:AS_AUDIO_QUEUE_START_FAILED];
@@ -1520,6 +1527,10 @@ packetDescriptions:(AudioStreamPacketDescription*)inPacketDescriptions {
 
 - (void)simulateErrorForTesting:(AudioStreamerErrorCode)code {
   [self failWithErrorCode:code];
+}
+
+- (void)setRetryBackoffIntervalForTesting:(NSTimeInterval)interval {
+  self.retryBackoffInterval = interval;
 }
 
 - (void)runBufferHealthMonitorOnceWithRunLoop:(NSRunLoop *)runLoop {
@@ -1709,6 +1720,53 @@ packetDescriptions:(AudioStreamPacketDescription*)inPacketDescriptions {
     return;
   }
   [self failWithErrorCode:AS_TIMED_OUT];
+}
+
+- (void)setSampleRateForTesting:(double)sampleRate {
+    asbd.mSampleRate = sampleRate;
+}
+
+- (void)setDiscontinuousForTesting:(BOOL)flag {
+    discontinuous = flag;
+}
+
+- (void)setParserReadyForPacketsForTesting:(BOOL)flag {
+    self.parserReadyForPackets = flag;
+}
+
+- (void)setFormatSniffBufferForTesting:(NSMutableData *)data {
+    self.formatSniffBuffer = data;
+}
+
+- (void)setAudioQueueForTesting:(AudioQueueRef)queue {
+    NSLog(@"[Debug] setAudioQueueForTesting called with %p", queue);
+    audioQueue = queue;
+    NSLog(@"[Debug] audioQueue is now %p", audioQueue);
+}
+
+- (OSStatus)parseBytes:(const void *)bytes length:(UInt32)length flags:(UInt32)flags {
+    return AudioFileStreamParseBytes(audioFileStream, length, bytes, flags);
+}
+
+- (void)setInternalStateForTesting:(AudioStreamerState)state {
+    AudioStreamerStateController *controller = self.stateController;
+    BOOL original = controller.dispatchSynchronouslyForTesting;
+    controller.dispatchSynchronouslyForTesting = YES;
+    [controller transitionToState:state];
+    controller.dispatchSynchronouslyForTesting = original;
+}
+
+- (AudioStreamerState)internalStateForTesting {
+    AudioStreamerStateController *controller = self.stateController;
+    return controller ? [controller currentState] : state_;
+}
+
+- (void)setHasAudioQueueStartedForTesting:(BOOL)flag {
+    self.hasAudioQueueStarted = flag;
+}
+
+- (void)setStateDispatchSynchronousForTesting:(BOOL)flag {
+    self.stateController.dispatchSynchronouslyForTesting = flag;
 }
 
 @end

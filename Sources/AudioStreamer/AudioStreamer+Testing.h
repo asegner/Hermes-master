@@ -21,6 +21,31 @@ NS_ASSUME_NONNULL_BEGIN
 /// deterministically. Pass `[NSRunLoop mainRunLoop]` to mirror production.
 - (void)runBufferHealthMonitorOnceWithRunLoop:(NSRunLoop *)runLoop;
 
+/// Manually inject audio packets for testing.
+- (void)handleAudioPackets:(const void *)inInputData
+               numberBytes:(UInt32)inNumberBytes
+             numberPackets:(UInt32)inNumberPackets
+        packetDescriptions:(AudioStreamPacketDescription *)inPacketDescriptions;
+
+/// Manually trigger property changes for testing.
+- (void)handlePropertyChangeForFileStream:(AudioFileStreamID)inAudioFileStream
+                     fileStreamPropertyID:(AudioFileStreamPropertyID)inPropertyID
+                                  ioFlags:(UInt32 *)ioFlags;
+
+/// Manually set the sample rate for testing.
+- (void)setSampleRateForTesting:(double)sampleRate;
+
+- (void)setDiscontinuousForTesting:(BOOL)flag;
+- (void)setParserReadyForPacketsForTesting:(BOOL)flag;
+- (void)setFormatSniffBufferForTesting:(NSMutableData * _Nullable)data;
+- (void)setAudioQueueForTesting:(AudioQueueRef _Nullable)queue;
+- (OSStatus)parseBytes:(const void *)bytes length:(UInt32)length flags:(UInt32)flags;
+- (void)setRetryBackoffIntervalForTesting:(NSTimeInterval)interval;
+- (void)setInternalStateForTesting:(AudioStreamerState)state;
+- (AudioStreamerState)internalStateForTesting;
+- (void)setHasAudioQueueStartedForTesting:(BOOL)flag;
+- (void)setStateDispatchSynchronousForTesting:(BOOL)flag;
+
 @end
 
 NS_ASSUME_NONNULL_END
