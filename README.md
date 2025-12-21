@@ -6,7 +6,7 @@ Picture ApolloGenome/Hermes 1.32b11 running on Macbook Air M1 Apple Silicon Sequ
 
 Forked from Hermes built in XCode 16 on MacOS 15 Apple Silicon as Apple Silicon app for the universal notarized app
 
-Includes music genome project data when playing song information. Station modes not stable so were removed.
+Includes music genome project data when playing song information. Station modes not stable so were removed. Station mode display is reenabled.
 
 UI redesigned due to deprecation of drawers. Now with more modern flat layout. A lot of the UI bugs are from old UI in interface builder using constraints rather than modern programatic swift UI.
 
@@ -15,7 +15,7 @@ A [Pandora](http://www.pandora.com/) client for macOS Intel and Apple Silicon.
 **Bug workarounds:**
 
 Known bug: The 2.0.0b1 refactor introduced a bug that can occasionaly cause audio skipping in the beginning  of a track from lost frames.
-Old behavior is the player would stop and throw an error to restart the playback from beginning.
+Old behavior is the player would stop and throw an error to restart the playback from beginning. This should be fixed in 200b5.
 
 B10 and B11 have heightened security permissions. B11 has hardened runtime. Try downloading b9 and running it before be b10 and b11.
 
@@ -28,11 +28,13 @@ If installing B11 and the scroll views for stations and history are not centered
 
 For b11 adding a station has to be done manually from toolbar. At top menu click Pandora > New / Edit / Reload stations 
 
-Removing a station will have to be done from pandora in web browser. Should be fixed.
+Removing a station will have to be done from pandora in web browser. Should be fixed in the menu.
 
 The play / pause button now says play. It still pauses when pressed. FIXED
 
 New delete station menu button causes UI glitch. Double click a station to play and restart. should be fixed.
+
+email pw login bug should be fixed. Should be able to click login. Previously required tab and enter keys.
 
 ### THIS PROJECT IS MAINTAINED BUT VOLUNTEERS TO TEST ARE WELCOME
 
