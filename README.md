@@ -55,16 +55,19 @@ If you would like to compile Hermes, continue reading.
 ### Develop against ApolloGenome
 
 - Adding stations type controls like Crowd Faves, Deep Cuts instead of only My Station default
+* stations mode is displayed but cannot yet be changed
   
 - Possible features fixing proxy bugs better error message display
+* need proxy mode testers
 
 - Improve support for later MacOS currently written for 10.10+ rewrite for 11+ (implemented now), setup app sandboxing (not yet but hardened runtime enabled), app notarization(done), use new keychain code(done), 
 
 - Hard redesign for UI in swift instead of interface builder (probably not since Hermes is forked from pianobar written in C)(still pending to rewrite to use swift instead of interface builder)
+* new design using hstack vstack is much faster and less buggy can delay rewriting from xib to swiftui standard
 
-- Need to split large files like audiostreamer to make it easier to maintain. Partly done for audiostreamer.
+- Need to split large files like audiostreamer to make it easier to maintain. * Partly done for audiostreamer.
 
-- Need more tests. Partly done.
+- Need more unit tests. Partly done.
 
 Below for Hermes
 Thanks to the suggestions by [blalor](https://github.com/blalor), there's a few
