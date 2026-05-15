@@ -9,6 +9,9 @@
 - (void)awakeFromNib {
   [super awakeFromNib];
 
+  [window setHasShadow:YES];
+  [window invalidateShadow];
+
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(proxyServerValidityChanged:) name:URLConnectionProxyValidityChangedNotification object:nil];
 }
 
