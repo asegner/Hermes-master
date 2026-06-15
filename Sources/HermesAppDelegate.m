@@ -198,6 +198,8 @@
   
   window.restorable = YES;
   window.restorationClass = [self class];
+  [window setHasShadow:YES];
+  [window invalidateShadow];
 
   [NSApp activateIgnoringOtherApps:YES];
 
