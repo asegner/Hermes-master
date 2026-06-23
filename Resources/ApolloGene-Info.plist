@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>ApolloGene</string>
+	<string>Hermes</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
@@ -36,15 +36,15 @@
 		<true/>
 	</dict>
 	<key>NSInputMonitoringUsageDescription</key>
-	<string>ApolloGene needs access to media keys so play, pause, and skip continue working while you use other apps.</string>
+	<string>Hermes needs access to media keys so play, pause, and skip continue working while you use other apps.</string>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2011–2026 Hermes ApolloGene contributors</string>
+	<string>© 2011–2017 Hermes contributors</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
-	<string>ApolloGeneApp</string>
+	<string>HermesApp</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
 	<key>NSUserNotificationAlertStyle</key>
