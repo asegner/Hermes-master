@@ -1286,14 +1286,13 @@ DQ
                                 <real value="3.4028234663852886e+38"/>
                             </customSpacing>
                         </stackView>
-                        <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wAm-n0-TIB" userLabel="HistoryStack View">
+                        <stackView distribution="fill" orientation="vertical" alignment="width" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wAm-n0-TIB" userLabel="HistoryStack View">
                             <rect key="frame" x="220" y="1" width="284" height="414"/>
                             <subviews>
                                 <collectionView maxNumberOfRows="11" maxNumberOfColumns="1" selectable="YES" allowsMultipleSelection="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7eQ-hl-E1A" customClass="HistoryCollectionView">
                                     <rect key="frame" x="0.0" y="0.0" width="198" height="414"/>
                                     <constraints>
                                         <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="180" id="Gee-qw-5mn"/>
-                                        <constraint firstAttribute="width" constant="198" id="Jt2-lc-IVY"/>
                                     </constraints>
                                     <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <color key="secondaryBackgroundColor" name="controlAlternatingRowColor" catalog="System" colorSpace="catalog"/>

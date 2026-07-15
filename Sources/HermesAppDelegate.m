@@ -198,6 +198,12 @@ static void DummyPacketsProc(void *inClientData,
 - (void) setCurrentView:(NSView *)view {
   NSView *superview = [window contentView];
 
+  // Content screens are swapped into the window rather than managed by a view
+  // controller, so they need to follow the content view's frame explicitly.
+  // Apply this before installing the view to avoid preserving a stale nib size.
+  [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [view setFrame:[superview bounds]];
+
   if ([[superview subviews] count] > 0) {
     NSView *prev_view = [superview subviews][0];
     if (prev_view == view) {
@@ -209,12 +215,6 @@ static void DummyPacketsProc(void *inClientData,
   } else {
     [superview addSubview:view];
   }
-
-  NSRect frame = [view frame];
-  NSRect superFrame = [superview frame];
-  frame.size.width = superFrame.size.width;
-  frame.size.height = superFrame.size.height;
-  [view setFrame:frame];
 
   [self updateWindowTitle];
 }

@@ -27,4 +27,25 @@
   XCTAssertTrue([delegate applicationShouldTerminateAfterLastWindowClosed:NSApp]);
 }
 
+- (void)testCurrentViewTracksWindowContentSize {
+  HermesAppDelegate *delegate = [[HermesAppDelegate alloc] init];
+  NSWindow *window = [[NSWindow alloc]
+      initWithContentRect:NSMakeRect(0, 0, 320, 240)
+                styleMask:NSWindowStyleMaskBorderless
+                  backing:NSBackingStoreBuffered
+                    defer:NO];
+  delegate.window = window;
+
+  NSView *contentScreen = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)];
+  [delegate setCurrentView:contentScreen];
+
+  XCTAssertEqual(contentScreen.autoresizingMask,
+                 NSViewWidthSizable | NSViewHeightSizable);
+  XCTAssertTrue(NSEqualRects(contentScreen.frame, window.contentView.bounds));
+
+  [window setContentSize:NSMakeSize(640, 480)];
+
+  XCTAssertTrue(NSEqualRects(contentScreen.frame, window.contentView.bounds));
+}
+
 @end
