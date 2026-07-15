@@ -32,6 +32,9 @@
   IBOutlet NSTextField *stationModeLabel;
   IBOutlet NSMenu *stationModesMenu;
   IBOutlet NSMenuItem *stationModesMenuItem;
+  IBOutlet NSStackView *historyPanel;
+  IBOutlet NSLayoutConstraint *artWidthConstraint;
+  IBOutlet NSLayoutConstraint *artHeightConstraint;
 
   // Playback related items
   IBOutlet NSToolbarItem *like;
@@ -47,6 +50,11 @@
   NSString *lastImgSrc;
   NSData *lastImg;
   BOOL presentedInputMonitoringAlert;
+  BOOL historyPanelVisible;
+  CGFloat compactArtSize;
+  CGFloat artHorizontalInset;
+  CGFloat artNonArtworkHeight;
+  CGFloat minimumHistoryContentWidth;
 }
 
 @property (readonly) Station *playing;
@@ -100,6 +108,8 @@
 - (void)presentInputMonitoringInstructionsAllowingRepeat;
 - (void)openInputMonitoringPreferences;
 - (void)requestInputMonitoringReminderIfNeeded;
+- (void)toggleHistoryPanel;
+- (void)showHistoryPanel;
 
 typedef bool (*HMSInputMonitoringAccessFunction)(void);
 void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction preflight,

@@ -556,11 +556,11 @@ static void DummyPacketsProc(void *inClientData,
 #pragma mark - Drawer management
 
 - (IBAction)toggleDrawerContent:(id)sender {
-  NSLog(@"toggleDrawerContent: ignored (drawer UI deprecated on macOS 11+).");
+  [playback toggleHistoryPanel];
 }
 
 - (IBAction)toggleDrawerVisible:(id)sender {
-  NSLog(@"toggleDrawerVisible: ignored (drawer UI deprecated on macOS 11+).");
+  [playback toggleHistoryPanel];
 }
 
 - (IBAction)showStationsDrawer:(id)sender {
@@ -572,8 +572,8 @@ static void DummyPacketsProc(void *inClientData,
 }
 
 - (IBAction)showHistoryDrawer:(id)sender {
-  NSLog(@"showHistoryDrawer: redirecting to history list (drawer UI deprecated).");
   [self activate:nil];
+  [playback showHistoryPanel];
   [[self history] updateUI];
 }
 

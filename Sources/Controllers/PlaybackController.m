@@ -21,6 +21,9 @@
 
 BOOL playOnStart = YES;
 
+static const CGFloat HermesHistoryPanelMinimumWidth = 198.0;
+static const NSTimeInterval HermesHistoryAnimationDuration = 0.22;
+
 static HMSInputMonitoringAccessFunction HermesPreflightListenEventAccess = NULL;
 static HMSInputMonitoringAccessFunction HermesRequestListenEventAccess = NULL;
 
@@ -289,6 +292,21 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   [playbackProgress setEnabled:NO];
   [self configureStationModesUI];
 
+  [playbackView layoutSubtreeIfNeeded];
+  historyPanelVisible = !historyPanel.hidden;
+  compactArtSize = artWidthConstraint.constant;
+
+  NSView *songStack = art.superview;
+  NSView *horizontalStack = historyPanel.superview;
+  artHorizontalInset = MAX(0.0, NSWidth(songStack.bounds) - compactArtSize);
+  artNonArtworkHeight = MAX(0.0, NSHeight(songStack.bounds) - compactArtSize);
+
+  CGFloat trailingInset = MAX(0.0, NSWidth(playbackView.bounds) - NSMaxX(horizontalStack.frame));
+  minimumHistoryContentWidth = ceil(NSMinX(horizontalStack.frame) +
+                                    NSMinX(historyPanel.frame) +
+                                    HermesHistoryPanelMinimumWidth +
+                                    trailingInset);
+
   // Media keys
   if ([MPRemoteCommandCenter class] != nil) {
     remoteCommandCenter = [MPRemoteCommandCenter sharedCommandCenter];
@@ -357,6 +375,68 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   dispatch_async(dispatch_get_main_queue(), ^{
     [self requestInputMonitoringReminderIfNeeded];
   });
+}
+
+- (void)expandWindowForHistoryIfNeeded {
+  NSWindow *window = [HMSAppDelegate window];
+  if (window == nil) {
+    return;
+  }
+
+  CGFloat currentContentWidth = NSWidth(window.contentView.bounds);
+  if (currentContentWidth >= minimumHistoryContentWidth) {
+    return;
+  }
+
+  NSRect targetFrame = window.frame;
+  targetFrame.size.width += minimumHistoryContentWidth - currentContentWidth;
+
+  NSRect visibleFrame = window.screen.visibleFrame;
+  if (!NSIsEmptyRect(visibleFrame)) {
+    targetFrame.size.width = MIN(targetFrame.size.width, NSWidth(visibleFrame));
+    targetFrame.origin.x = MIN(targetFrame.origin.x, NSMaxX(visibleFrame) - NSWidth(targetFrame));
+    targetFrame.origin.x = MAX(targetFrame.origin.x, NSMinX(visibleFrame));
+  }
+
+  [window setFrame:targetFrame display:YES animate:YES];
+}
+
+- (CGFloat)expandedArtSize {
+  [playbackView layoutSubtreeIfNeeded];
+  NSView *horizontalStack = historyPanel.superview;
+  CGFloat availableWidth = NSWidth(horizontalStack.bounds) - artHorizontalInset;
+  CGFloat availableHeight = NSHeight(horizontalStack.bounds) - artNonArtworkHeight;
+  return floor(MAX(compactArtSize, MIN(availableWidth, availableHeight)));
+}
+
+- (void)setHistoryPanelVisible:(BOOL)visible {
+  if (historyPanel == nil || historyPanelVisible == visible) {
+    return;
+  }
+
+  [playbackView layoutSubtreeIfNeeded];
+  if (visible) {
+    [self expandWindowForHistoryIfNeeded];
+  }
+
+  historyPanelVisible = visible;
+  CGFloat targetArtSize = visible ? compactArtSize : [self expandedArtSize];
+  [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+    context.duration = HermesHistoryAnimationDuration;
+    context.allowsImplicitAnimation = YES;
+    self->artWidthConstraint.constant = targetArtSize;
+    self->artHeightConstraint.constant = targetArtSize;
+    [[self->historyPanel animator] setHidden:!visible];
+    [self->playbackView layoutSubtreeIfNeeded];
+  } completionHandler:nil];
+}
+
+- (void)toggleHistoryPanel {
+  [self setHistoryPanelVisible:!historyPanelVisible];
+}
+
+- (void)showHistoryPanel {
+  [self setHistoryPanelVisible:YES];
 }
 
 - (void)showToolbar {

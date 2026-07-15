@@ -349,7 +349,7 @@ MgA3AEkATABRAFMAXQBjAGwAcwB4AIAAlQCXAJkAmwCdAKcArACxALwAvwDBAMMAxQDKANUA3gDmAOkA
                             <action selector="next:" target="835" id="853"/>
                         </connections>
                     </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="63378708-9425-4BEA-BDC4-0A119EA2829F" label="History" paletteLabel="History/Stations" toolTip="Show playback history" tag="-1" image="history" sizingBehavior="auto" id="1328">
+                    <toolbarItem implicitItemIdentifier="63378708-9425-4BEA-BDC4-0A119EA2829F" label="History" paletteLabel="History" toolTip="Show or hide playback history" tag="-1" image="history" sizingBehavior="auto" id="1328">
                         <connections>
                             <action selector="toggleDrawerContent:" target="494" id="2226"/>
                         </connections>
@@ -958,10 +958,13 @@ Gw
             <connections>
                 <outlet property="albumLabel" destination="1170" id="1240"/>
                 <outlet property="art" destination="2436" id="2439"/>
+                <outlet property="artHeightConstraint" destination="ECG-2X-yCe" id="Cdx-yI-Ah1"/>
                 <outlet property="artLoading" destination="1249" id="1250"/>
+                <outlet property="artWidthConstraint" destination="3xZ-YG-gPR" id="Cdx-yI-Aw1"/>
                 <outlet property="artistLabel" destination="1173" id="1243"/>
                 <outlet property="dislike" destination="819" id="2271"/>
                 <outlet property="explanationLabel" destination="Mwv-sA-ua1" id="pZX-OF-ZC6"/>
+                <outlet property="historyPanel" destination="wAm-n0-TIB" id="Cdx-yI-Hp1"/>
                 <outlet property="like" destination="818" id="847"/>
                 <outlet property="nextSong" destination="777" id="GyL-Fk-D4G"/>
                 <outlet property="playbackProgress" destination="7eu-hy-jM9" id="cdd-rs-hGP"/>
@@ -1304,6 +1307,9 @@ DQ
                                     </connections>
                                 </collectionView>
                             </subviews>
+                            <constraints>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" priority="750" constant="198" id="Cdx-yI-Hmw"/>
+                            </constraints>
                             <visibilityPriorities>
                                 <integer value="1000"/>
                             </visibilityPriorities>
