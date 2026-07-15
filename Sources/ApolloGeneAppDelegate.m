@@ -1,6 +1,6 @@
 /**
- * @file HermesAppDelegate.m
- * @brief Implementation of the AppDelegate for Hermes
+ * @file ApolloGeneAppDelegate.m
+ * @brief Implementation of the AppDelegate for ApolloGene
  *
  * Contains startup routines, and other interfaces with the OS
  */
@@ -1201,7 +1201,7 @@ static void DummyPacketsProc(void *inClientData,
   if (playback.playing != nil) {
     [window setTitle:[NSString stringWithFormat:@"%@%@", debugTitlePrefix, playback.playing.name]];
   } else {
-    [window setTitle:[NSString stringWithFormat:@"%@Hermes", debugTitlePrefix]];
+    [window setTitle:[NSString stringWithFormat:@"%@ApolloGene", debugTitlePrefix]];
   }
 }
 

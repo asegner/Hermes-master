@@ -46,7 +46,7 @@
   NSArray<NSXMLNode *> *topLevelItems = [document nodesForXPath:@"//menu[@id='29']/items/menuItem" error:&error];
   XCTAssertNil(error);
 
-  NSArray<NSString *> *expectedTitles = @[@"Hermes", @"File", @"Edit", @"View", @"Pandora", @"Window", @"Help"];
+  NSArray<NSString *> *expectedTitles = @[@"ApolloGene", @"File", @"Edit", @"View", @"Pandora", @"Window", @"Help"];
   NSMutableArray<NSString *> *actualTitles = [[NSMutableArray alloc] initWithCapacity:topLevelItems.count];
   for (NSXMLNode *item in topLevelItems) {
     NSString *title = [[(NSXMLElement *)item attributeForName:@"title"] stringValue];

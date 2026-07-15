@@ -33,6 +33,7 @@
   IBOutlet NSMenu *stationModesMenu;
   IBOutlet NSMenuItem *stationModesMenuItem;
   IBOutlet NSStackView *historyPanel;
+  IBOutlet NSView *chosenForSpacer;
   IBOutlet NSLayoutConstraint *artWidthConstraint;
   IBOutlet NSLayoutConstraint *artHeightConstraint;
 

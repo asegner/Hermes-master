@@ -165,7 +165,7 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 - (void)presentInputMonitoringInstructionsAlert {
   NSAlert *alert = [[NSAlert alloc] init];
   alert.messageText = @"Enable Media Keys";
-  alert.informativeText = @"Hermes needs permission in System Settings → Privacy & Security → Input Monitoring to react to media keys. Enable Hermes in Input Monitoring so Play/Pause continues working.";
+  alert.informativeText = @"ApolloGene needs permission in System Settings → Privacy & Security → Input Monitoring to react to media keys. Enable ApolloGene in Input Monitoring so Play/Pause continues working.";
   [alert addButtonWithTitle:@"Open System Settings"];
   [alert addButtonWithTitle:@"Not Now"];
   [alert addButtonWithTitle:@"Don't Remind Me Again"];
@@ -299,7 +299,8 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   NSView *songStack = art.superview;
   NSView *horizontalStack = historyPanel.superview;
   artHorizontalInset = MAX(0.0, NSWidth(songStack.bounds) - compactArtSize);
-  artNonArtworkHeight = MAX(0.0, NSHeight(songStack.bounds) - compactArtSize);
+  artNonArtworkHeight = MAX(0.0, NSHeight(songStack.bounds) -
+                            compactArtSize - NSHeight(chosenForSpacer.bounds));
 
   CGFloat trailingInset = MAX(0.0, NSWidth(playbackView.bounds) - NSMaxX(horizontalStack.frame));
   minimumHistoryContentWidth = ceil(NSMinX(horizontalStack.frame) +
@@ -403,7 +404,10 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 
 - (CGFloat)expandedArtSize {
   [playbackView layoutSubtreeIfNeeded];
+  NSView *songStack = art.superview;
   NSView *horizontalStack = historyPanel.superview;
+  artNonArtworkHeight = MAX(0.0, NSHeight(songStack.bounds) -
+                            artWidthConstraint.constant - NSHeight(chosenForSpacer.bounds));
   CGFloat availableWidth = NSWidth(horizontalStack.bounds) - artHorizontalInset;
   CGFloat availableHeight = NSHeight(horizontalStack.bounds) - artNonArtworkHeight;
   return floor(MAX(compactArtSize, MIN(availableWidth, availableHeight)));

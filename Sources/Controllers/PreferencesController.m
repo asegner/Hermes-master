@@ -91,7 +91,7 @@
     } else {
 #endif
 #if DEBUG
-      mediaKeysLabel.stringValue = @"Media keys are not available because this version of Hermes is compiled in debug mode.";
+      mediaKeysLabel.stringValue = @"Media keys are not available because this version of ApolloGene is compiled in debug mode.";
 #else
       mediaKeysLabel.stringValue = @"Media keys are unavailable for an unknown reason.";
 #endif
@@ -103,7 +103,7 @@
       if (!PREF_KEY_BOOL(INPUT_MONITORING_REMINDER_ENABLED)) {
         mediaKeysLabel.stringValue = @"Input Monitoring reminder is turned off. Click below to re-enable it when you're ready.";
       } else {
-        mediaKeysLabel.stringValue = @"Hermes still needs Input Monitoring permission for media keys. Open System Settings → Privacy & Security → Input Monitoring and enable Hermes.";
+        mediaKeysLabel.stringValue = @"ApolloGene still needs Input Monitoring permission for media keys. Open System Settings → Privacy & Security → Input Monitoring and enable ApolloGene.";
       }
     } else {
       mediaKeysLabel.stringValue = @"";
@@ -168,7 +168,7 @@
   if (@available(macOS 10.15, *)) {
     if (![[HMSAppDelegate playback] hasInputMonitoringAccess]) {
       mediaKeysLabel.stringValue = PREF_KEY_BOOL(INPUT_MONITORING_REMINDER_ENABLED)
-        ? @"Hermes still needs Input Monitoring permission for media keys. Open System Settings → Privacy & Security → Input Monitoring and enable Hermes."
+        ? @"ApolloGene still needs Input Monitoring permission for media keys. Open System Settings → Privacy & Security → Input Monitoring and enable ApolloGene."
         : @"Input Monitoring reminder is turned off. Click below to re-enable it when you're ready.";
     } else {
       mediaKeysLabel.stringValue = @"";
@@ -230,7 +230,7 @@
     BOOL reminderEnabled = PREF_KEY_BOOL(INPUT_MONITORING_REMINDER_ENABLED);
     if (![[HMSAppDelegate playback] hasInputMonitoringAccess]) {
       mediaKeysLabel.stringValue = reminderEnabled
-        ? @"Hermes still needs Input Monitoring permission for media keys. Open System Settings → Privacy & Security → Input Monitoring and enable Hermes."
+        ? @"ApolloGene still needs Input Monitoring permission for media keys. Open System Settings → Privacy & Security → Input Monitoring and enable ApolloGene."
         : @"Input Monitoring reminder is turned off. Click below to re-enable it when you're ready.";
     } else {
       mediaKeysLabel.stringValue = @"";

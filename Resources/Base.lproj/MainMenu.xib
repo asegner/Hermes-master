@@ -15,10 +15,10 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <menu title="AMainMenu" systemMenu="main" id="29">
             <items>
-                <menuItem title="Hermes" id="56">
-                    <menu key="submenu" title="Hermes" systemMenu="apple" id="57">
+                <menuItem title="ApolloGene" id="56">
+                    <menu key="submenu" title="ApolloGene" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About Hermes" id="58">
+                            <menuItem title="About ApolloGene" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
@@ -47,7 +47,7 @@
                             <menuItem isSeparatorItem="YES" id="144">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Hide Hermes" keyEquivalent="h" id="134">
+                            <menuItem title="Hide ApolloGene" keyEquivalent="h" id="134">
                                 <connections>
                                     <action selector="hide:" target="-1" id="367"/>
                                 </connections>
@@ -66,7 +66,7 @@
                             <menuItem isSeparatorItem="YES" id="149">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Quit Hermes" keyEquivalent="q" id="136">
+                            <menuItem title="Quit ApolloGene" keyEquivalent="q" id="136">
                                 <connections>
                                     <action selector="terminate:" target="-3" id="449"/>
                                 </connections>
@@ -285,7 +285,7 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Help" systemMenu="help" id="491">
                         <items>
-                            <menuItem title="Hermes Web Site" id="492">
+                            <menuItem title="ApolloGene Web Site" id="492">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="hermesHomepage:" target="494" id="EdS-Zz-Tbe"/>
@@ -304,7 +304,7 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="aMG-UP-yRH"/>
-                            <menuItem title="Hermes on GitHub" id="zJ5-sc-NCR">
+                            <menuItem title="ApolloGene on GitHub" id="zJ5-sc-NCR">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="hermesOnGitHub:" target="494" id="xwk-J2-CdM"/>
@@ -316,7 +316,7 @@
             </items>
             <point key="canvasLocation" x="162" y="496"/>
         </menu>
-        <window title="Hermes" separatorStyle="line" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hasShadow="NO" releasedWhenClosed="NO" frameAutosaveName="Preferences" animationBehavior="default" tabbingMode="disallowed" toolbarStyle="expanded" id="371" userLabel="Main Window" customClass="HermesMainWindow">
+        <window title="ApolloGene" separatorStyle="line" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hasShadow="NO" releasedWhenClosed="NO" frameAutosaveName="Preferences" animationBehavior="default" tabbingMode="disallowed" toolbarStyle="expanded" id="371" userLabel="Main Window" customClass="HermesMainWindow">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="300" y="434" width="314" height="284"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="900"/>
@@ -962,6 +962,7 @@ Gw
                 <outlet property="artLoading" destination="1249" id="1250"/>
                 <outlet property="artWidthConstraint" destination="3xZ-YG-gPR" id="Cdx-yI-Aw1"/>
                 <outlet property="artistLabel" destination="1173" id="1243"/>
+                <outlet property="chosenForSpacer" destination="Cdx-yI-Cfs" id="Cdx-yI-Cfo"/>
                 <outlet property="dislike" destination="819" id="2271"/>
                 <outlet property="explanationLabel" destination="Mwv-sA-ua1" id="pZX-OF-ZC6"/>
                 <outlet property="historyPanel" destination="wAm-n0-TIB" id="Cdx-yI-Hp1"/>
@@ -1229,18 +1230,6 @@ DQ
                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                 </textField>
-                                <textField identifier="explanationLabel" focusRingType="none" horizontalHuggingPriority="300" verticalHuggingPriority="750" horizontalCompressionResistancePriority="800" translatesAutoresizingMaskIntoConstraints="NO" id="Mwv-sA-ua1">
-                                    <rect key="frame" x="-2" y="29" width="100" height="15"/>
-                                    <constraints>
-                                        <constraint firstAttribute="height" relation="lessThanOrEqual" constant="110" id="eqe-B1-AYM"/>
-                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="202" id="jNs-aG-Ng8"/>
-                                    </constraints>
-                                    <textFieldCell key="cell" selectable="YES" identifier="explanationLabel" title="explanationLabel" id="3la-yr-nao">
-                                        <font key="font" metaFont="cellTitle"/>
-                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    </textFieldCell>
-                                </textField>
                                 <slider toolTip="Volume Control" wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1158" userLabel="Volume Horizontal Slider">
                                     <rect key="frame" x="-2" y="10" width="202" height="20"/>
                                     <constraints>
@@ -1262,6 +1251,21 @@ DQ
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                 </textField>
+                                <customView verticalHuggingPriority="1" verticalCompressionResistancePriority="1" translatesAutoresizingMaskIntoConstraints="NO" id="Cdx-yI-Cfs" userLabel="Chosen For Flexible Spacer">
+                                    <rect key="frame" x="0.0" y="15" width="1" height="95"/>
+                                </customView>
+                                <textField identifier="explanationLabel" focusRingType="none" horizontalHuggingPriority="300" verticalHuggingPriority="750" horizontalCompressionResistancePriority="800" translatesAutoresizingMaskIntoConstraints="NO" id="Mwv-sA-ua1">
+                                    <rect key="frame" x="-2" y="0.0" width="100" height="15"/>
+                                    <constraints>
+                                        <constraint firstAttribute="height" relation="lessThanOrEqual" constant="110" id="eqe-B1-AYM"/>
+                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="202" id="jNs-aG-Ng8"/>
+                                    </constraints>
+                                    <textFieldCell key="cell" selectable="YES" identifier="explanationLabel" title="explanationLabel" id="3la-yr-nao">
+                                        <font key="font" metaFont="cellTitle"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
                             </subviews>
                             <constraints>
                                 <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="220" id="hiR-sk-OLS"/>
@@ -1276,8 +1280,10 @@ DQ
                                 <integer value="1000"/>
                                 <integer value="1000"/>
                                 <integer value="1000"/>
+                                <integer value="1000"/>
                             </visibilityPriorities>
                             <customSpacing>
+                                <real value="3.4028234663852886e+38"/>
                                 <real value="3.4028234663852886e+38"/>
                                 <real value="3.4028234663852886e+38"/>
                                 <real value="3.4028234663852886e+38"/>
@@ -1319,6 +1325,7 @@ DQ
                         </stackView>
                     </subviews>
                     <constraints>
+                        <constraint firstAttribute="bottom" secondItem="2tX-eR-9Av" secondAttribute="bottom" id="Cdx-yI-Cfb"/>
                         <constraint firstItem="wAm-n0-TIB" firstAttribute="top" secondItem="GqR-eM-x7f" secondAttribute="top" constant="1" id="Dsj-Hh-enp"/>
                         <constraint firstAttribute="bottom" secondItem="wAm-n0-TIB" secondAttribute="bottom" constant="1" id="xhf-c1-DXJ"/>
                     </constraints>
@@ -1523,7 +1530,7 @@ DQ
                 <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1550">
                     <rect key="frame" x="36" y="314" width="308" height="28"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Use play/pause and next track keys to control Hermes from any application." id="1551">
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Use play/pause and next track keys to control ApolloGene from any application." id="1551">
                         <font key="font" metaFont="system" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -1544,7 +1551,7 @@ DQ
                 <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2354">
                     <rect key="frame" x="36" y="251" width="308" height="28"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="When checked, control Hermes with the keyboard or its menu on the right side of the menu bar." id="2355">
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="When checked, control ApolloGene with the keyboard or its menu on the right side of the menu bar." id="2355">
                         <font key="font" metaFont="system" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -1586,7 +1593,7 @@ DQ
                 <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sIX-RA-vSL">
                     <rect key="frame" x="156" y="203" width="188" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="radio" title="Color Hermes icon only" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="i1p-bV-vfc">
+                    <buttonCell key="cell" type="radio" title="Color ApolloGene icon only" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="i1p-bV-vfc">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -1623,7 +1630,7 @@ DQ
                 <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2369">
                     <rect key="frame" x="18" y="78" width="326" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Keep Hermes on top of all other windows" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="2370">
+                    <buttonCell key="cell" type="check" title="Keep ApolloGene on top of all other windows" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="2370">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -2436,7 +2443,7 @@ DQ
         </window>
         <menu title="Title" id="2308" userLabel="Status bar menu">
             <items>
-                <menuItem title="Show Hermes" id="2313">
+                <menuItem title="Show ApolloGene" id="2313">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="activate:" target="494" id="2330"/>
@@ -2484,7 +2491,7 @@ DQ
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="2322"/>
-                <menuItem title="About Hermes" id="Qwq-0z-jUK">
+                <menuItem title="About ApolloGene" id="Qwq-0z-jUK">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="orderFrontStandardAboutPanel:" target="-2" id="twq-VT-q9u"/>
@@ -2497,13 +2504,13 @@ DQ
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="fLS-rf-56B"/>
-                <menuItem title="Hermes Preferences…" id="2325">
+                <menuItem title="ApolloGene Preferences…" id="2325">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="show:" target="1114" id="2336"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Quit Hermes" id="2323">
+                <menuItem title="Quit ApolloGene" id="2323">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="terminate:" target="-3" id="2324"/>
