@@ -18,11 +18,13 @@
 #import "StationsController.h"
 #import "PreferencesController.h"
 #import "Notifications.h"
+#import "Views/PlaybackSplitView.h"
 
 BOOL playOnStart = YES;
 
-static const CGFloat HermesHistoryPanelMinimumWidth = 198.0;
-static const NSTimeInterval HermesHistoryAnimationDuration = 0.22;
+static const CGFloat HermesSongDetailsHorizontalPadding = 10.0;
+static const CGFloat HermesSongDetailsBottomPadding = 8.0;
+static const CGFloat HermesSongDetailsSpacing = 4.0;
 
 static HMSInputMonitoringAccessFunction HermesPreflightListenEventAccess = NULL;
 static HMSInputMonitoringAccessFunction HermesRequestListenEventAccess = NULL;
@@ -38,6 +40,20 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 @end
 
 @interface PlaybackController ()
+- (void)configureTitlebarSidebarControlsForWindow:(NSWindow *)window;
+- (NSButton *)titlebarButtonWithSystemSymbol:(NSString *)symbolName
+                                       label:(NSString *)label
+                                     toolTip:(NSString *)toolTip
+                                      action:(SEL)action;
+- (void)toggleStationsPanelFromTitlebar:(id)sender;
+- (void)toggleHistoryPanelFromTitlebar:(id)sender;
+- (void)updateTitlebarSidebarToolTips;
+- (void)restoreSongInfoVisibility;
+- (void)updateSongInfoToolbarItem;
+- (void)configureSongDetailsLayout;
+- (void)configurePlaybackSplitView;
+- (void)restoreSidebarVisibility;
+- (void)presentPlaybackView;
 @end
 
 @implementation PlaybackController
@@ -45,6 +61,7 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 @synthesize playing;
 @synthesize lastImg;
 @synthesize remoteCommandCenter, mediaKeyTap;
+@synthesize stationModeService = _stationModeService;
 
 + (void) setPlayOnStart: (BOOL)play {
   playOnStart = play;
@@ -189,12 +206,14 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
         // Update the existing explanation label
         [explanationLabel setStringValue:explanation];
         [explanationLabel setToolTip:explanation]; // Optional: also set as tooltip
+        [self updateSongInfoToolbarItem];
         
         NSLog(@"🎵 Updated explanationLabel with: %@", explanation);
     } else {
         NSLog(@"❌ Missing song or explanation data");
         // Clear the label if no explanation
         [explanationLabel setStringValue:@""];
+        [self updateSongInfoToolbarItem];
     }
 }
 
@@ -287,26 +306,33 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   // This has been SPI forever, but will stop the toolbar icons from sliding around.
   if ([playpause respondsToSelector:@selector(_setAllPossibleLabelsToFit:)])
     [playpause _setAllPossibleLabelsToFit:@[@"Play", @"Pause"]];
+
+  // Let AppKit move controls into the toolbar overflow menu as the window
+  // narrows. Toolbar items must not expand the window back to their combined
+  // ideal width after a user resize.
+  for (NSToolbarItem *item in toolbar.items) {
+    item.visibilityPriority = NSToolbarItemVisibilityPriorityLow;
+  }
+  playpause.visibilityPriority = NSToolbarItemVisibilityPriorityHigh;
+
+  [self updateSongInfoToolbarItem];
   
   // prevent dragging the progress slider
   [playbackProgress setEnabled:NO];
   [self configureStationModesUI];
+  [self configureSongDetailsLayout];
+  [self configurePlaybackSplitView];
 
   [playbackView layoutSubtreeIfNeeded];
-  historyPanelVisible = !historyPanel.hidden;
-  compactArtSize = artWidthConstraint.constant;
+  stationsPanelVisible = playbackSplitView.leadingPaneVisible;
+  historyPanelVisible = playbackSplitView.trailingPaneVisible;
+  historyPanel.wantsLayer = YES;
+  historyPanel.layer.masksToBounds = YES;
+  [self configureTitlebarSidebarControlsForWindow:window];
 
-  NSView *songStack = art.superview;
-  NSView *horizontalStack = historyPanel.superview;
-  artHorizontalInset = MAX(0.0, NSWidth(songStack.bounds) - compactArtSize);
-  artNonArtworkHeight = MAX(0.0, NSHeight(songStack.bounds) -
-                            compactArtSize - NSHeight(chosenForSpacer.bounds));
-
-  CGFloat trailingInset = MAX(0.0, NSWidth(playbackView.bounds) - NSMaxX(horizontalStack.frame));
-  minimumHistoryContentWidth = ceil(NSMinX(horizontalStack.frame) +
-                                    NSMinX(historyPanel.frame) +
-                                    HermesHistoryPanelMinimumWidth +
-                                    trailingInset);
+  // Content constraints may express their natural size, but they must not
+  // become an AppKit window-resize guardrail.
+  window.contentMinSize = NSZeroSize;
 
   // Media keys
   if ([MPRemoteCommandCenter class] != nil) {
@@ -378,39 +404,204 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   });
 }
 
-- (void)expandWindowForHistoryIfNeeded {
-  NSWindow *window = [HMSAppDelegate window];
-  if (window == nil) {
+- (void)configureTitlebarSidebarControlsForWindow:(NSWindow *)window {
+  if (window == nil || stationsTitlebarButton != nil || historyTitlebarButton != nil) {
     return;
   }
 
-  CGFloat currentContentWidth = NSWidth(window.contentView.bounds);
-  if (currentContentWidth >= minimumHistoryContentWidth) {
+  NSButton *closeButton = [window standardWindowButton:NSWindowCloseButton];
+  NSButton *zoomButton = [window standardWindowButton:NSWindowZoomButton];
+  NSView *titlebarView = closeButton.superview;
+  if (titlebarView == nil || zoomButton == nil) {
     return;
   }
 
-  NSRect targetFrame = window.frame;
-  targetFrame.size.width += minimumHistoryContentWidth - currentContentWidth;
+  stationsTitlebarButton = [self titlebarButtonWithSystemSymbol:@"sidebar.left"
+                                                          label:NSLocalizedString(@"Station list", nil)
+                                                        toolTip:NSLocalizedString(@"Show or hide station list", nil)
+                                                         action:@selector(toggleStationsPanelFromTitlebar:)];
+  historyTitlebarButton = [self titlebarButtonWithSystemSymbol:@"sidebar.right"
+                                                         label:NSLocalizedString(@"Playback history", nil)
+                                                       toolTip:NSLocalizedString(@"Show or hide playback history", nil)
+                                                        action:@selector(toggleHistoryPanelFromTitlebar:)];
+  titlebarTitleLabel = [NSTextField labelWithString:window.title ?: @""];
+  titlebarTitleLabel.alignment = NSTextAlignmentLeft;
+  titlebarTitleLabel.font = [NSFont systemFontOfSize:[NSFont systemFontSize]
+                                             weight:NSFontWeightSemibold];
+  titlebarTitleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+  titlebarTitleLabel.maximumNumberOfLines = 1;
+  titlebarTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  [titlebarTitleLabel setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow
+                                               forOrientation:NSLayoutConstraintOrientationHorizontal];
 
-  NSRect visibleFrame = window.screen.visibleFrame;
-  if (!NSIsEmptyRect(visibleFrame)) {
-    targetFrame.size.width = MIN(targetFrame.size.width, NSWidth(visibleFrame));
-    targetFrame.origin.x = MIN(targetFrame.origin.x, NSMaxX(visibleFrame) - NSWidth(targetFrame));
-    targetFrame.origin.x = MAX(targetFrame.origin.x, NSMinX(visibleFrame));
-  }
-
-  [window setFrame:targetFrame display:YES animate:YES];
+  window.titleVisibility = NSWindowTitleHidden;
+  [titlebarView addSubview:stationsTitlebarButton];
+  [titlebarView addSubview:historyTitlebarButton];
+  [titlebarView addSubview:titlebarTitleLabel];
+  NSLayoutConstraint *titleLeadingConstraint =
+    [titlebarTitleLabel.leadingAnchor constraintEqualToAnchor:stationsTitlebarButton.trailingAnchor
+                                                constant:10.0];
+  NSLayoutConstraint *titleTrailingConstraint =
+    [titlebarTitleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:historyTitlebarButton.leadingAnchor
+                                                           constant:-4.0];
+  titleLeadingConstraint.priority = NSLayoutPriorityRequired - 1.0;
+  [NSLayoutConstraint activateConstraints:@[
+    [stationsTitlebarButton.leadingAnchor constraintEqualToAnchor:zoomButton.trailingAnchor constant:12.0],
+    [stationsTitlebarButton.centerYAnchor constraintEqualToAnchor:closeButton.centerYAnchor],
+    [stationsTitlebarButton.widthAnchor constraintEqualToConstant:28.0],
+    [stationsTitlebarButton.heightAnchor constraintEqualToConstant:24.0],
+    [historyTitlebarButton.trailingAnchor constraintEqualToAnchor:titlebarView.trailingAnchor constant:-10.0],
+    [historyTitlebarButton.centerYAnchor constraintEqualToAnchor:closeButton.centerYAnchor],
+    [historyTitlebarButton.widthAnchor constraintEqualToConstant:28.0],
+    [historyTitlebarButton.heightAnchor constraintEqualToConstant:24.0],
+    titleLeadingConstraint,
+    titleTrailingConstraint,
+    [titlebarTitleLabel.centerYAnchor constraintEqualToAnchor:closeButton.centerYAnchor]
+  ]];
+  [titlebarTitleLabel bind:NSValueBinding
+                  toObject:window
+               withKeyPath:@"title"
+                   options:nil];
+  [self updateTitlebarSidebarToolTips];
 }
 
-- (CGFloat)expandedArtSize {
+- (void)configureSongDetailsLayout {
+  songStack.edgeInsets = NSEdgeInsetsMake(0.0,
+                                          HermesSongDetailsHorizontalPadding,
+                                          HermesSongDetailsBottomPadding,
+                                          HermesSongDetailsHorizontalPadding);
+  songStack.alignment = NSLayoutAttributeCenterX;
+  songStack.spacing = HermesSongDetailsSpacing;
+
+  NSView *artContainer = art.superview;
+  for (NSLayoutConstraint *constraint in songStack.constraints) {
+    if (constraint.firstItem == artContainer &&
+        constraint.firstAttribute == NSLayoutAttributeWidth &&
+        constraint.secondItem == songStack &&
+        constraint.secondAttribute == NSLayoutAttributeWidth) {
+      constraint.constant = -(HermesSongDetailsHorizontalPadding * 2.0);
+      break;
+    }
+  }
+
+  NSArray<NSTextField *> *detailLabels = @[
+    artistLabel,
+    albumLabel,
+    songLabel,
+    stationModeLabel,
+    progressLabel,
+    explanationLabel
+  ];
+  NSSet<NSTextField *> *singleLineLabels = [NSSet setWithArray:@[
+    artistLabel,
+    albumLabel,
+    songLabel,
+    stationModeLabel,
+    progressLabel
+  ]];
+  NSMutableArray<NSLayoutConstraint *> *detailWidthConstraints = [NSMutableArray array];
+  for (NSTextField *detailLabel in detailLabels) {
+    detailLabel.alignment = NSTextAlignmentCenter;
+    detailLabel.preferredMaxLayoutWidth = 0.0;
+    if ([singleLineLabels containsObject:detailLabel]) {
+      detailLabel.maximumNumberOfLines = 1;
+      detailLabel.cell.wraps = NO;
+      detailLabel.cell.scrollable = YES;
+      detailLabel.cell.lineBreakMode = NSLineBreakByTruncatingTail;
+      [detailLabel setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow
+                                            forOrientation:NSLayoutConstraintOrientationHorizontal];
+    }
+    for (NSLayoutConstraint *constraint in [detailLabel.constraints copy]) {
+      if (constraint.firstItem == detailLabel &&
+          constraint.firstAttribute == NSLayoutAttributeWidth &&
+          constraint.relation == NSLayoutRelationLessThanOrEqual &&
+          constraint.secondItem == nil) {
+        constraint.active = NO;
+      }
+    }
+    [detailWidthConstraints addObject:
+      [detailLabel.widthAnchor constraintEqualToAnchor:songStack.widthAnchor
+                                              constant:-(HermesSongDetailsHorizontalPadding * 2.0)]];
+  }
+  [NSLayoutConstraint activateConstraints:detailWidthConstraints];
+}
+
+- (void)configurePlaybackSplitView {
+  NSStackView *legacyPlaybackRow = (NSStackView *)songStack.superview;
+  if (![legacyPlaybackRow isKindOfClass:[NSStackView class]]) {
+    return;
+  }
+
+  [NSLayoutConstraint deactivateConstraints:[playbackView.constraints copy]];
+  for (NSLayoutConstraint *constraint in [stationsPanel.constraints copy]) {
+    if (constraint.firstItem == stationsPanel &&
+        constraint.firstAttribute == NSLayoutAttributeWidth) {
+      constraint.active = NO;
+    }
+  }
+
+  [legacyPlaybackRow removeArrangedSubview:songStack];
+  [songStack removeFromSuperview];
+  [legacyPlaybackRow removeArrangedSubview:historyPanel];
+  [historyPanel removeFromSuperview];
+  [stationsPanel removeFromSuperview];
+  [legacyPlaybackRow removeFromSuperview];
+
+  playbackSplitView = [[PlaybackSplitView alloc] initWithFrame:playbackView.bounds];
+  playbackSplitView.translatesAutoresizingMaskIntoConstraints = NO;
+  playbackSplitView.preferredLeadingPaneWidth = 198.0;
+  playbackSplitView.preferredTrailingPaneWidth = 198.0;
+  [playbackSplitView setLeadingPane:stationsPanel
+                        centerPane:songStack
+                      trailingPane:historyPanel];
+  [playbackView addSubview:playbackSplitView];
+  [NSLayoutConstraint activateConstraints:@[
+    [playbackSplitView.leadingAnchor constraintEqualToAnchor:playbackView.leadingAnchor],
+    [playbackSplitView.trailingAnchor constraintEqualToAnchor:playbackView.trailingAnchor],
+    [playbackSplitView.topAnchor constraintEqualToAnchor:playbackView.topAnchor],
+    [playbackSplitView.bottomAnchor constraintEqualToAnchor:playbackView.bottomAnchor]
+  ]];
+}
+
+- (NSButton *)titlebarButtonWithSystemSymbol:(NSString *)symbolName
+                                       label:(NSString *)label
+                                     toolTip:(NSString *)toolTip
+                                      action:(SEL)action {
+  NSImage *image = [NSImage imageWithSystemSymbolName:symbolName
+                             accessibilityDescription:label];
+  NSButton *button = [NSButton buttonWithImage:image target:self action:action];
+  button.bezelStyle = NSBezelStyleToolbar;
+  button.imagePosition = NSImageOnly;
+  button.imageScaling = NSImageScaleProportionallyDown;
+  button.toolTip = toolTip;
+  button.translatesAutoresizingMaskIntoConstraints = NO;
+  return button;
+}
+
+- (void)toggleStationsPanelFromTitlebar:(id)sender {
+  [self toggleStationsPanel];
+}
+
+- (void)toggleHistoryPanelFromTitlebar:(id)sender {
+  [self toggleHistoryPanel];
+}
+
+- (void)updateTitlebarSidebarToolTips {
+  stationsTitlebarButton.toolTip = stationsPanelVisible
+    ? NSLocalizedString(@"Hide Station List", nil)
+    : NSLocalizedString(@"Show Station List", nil);
+  historyTitlebarButton.toolTip = historyPanelVisible
+    ? NSLocalizedString(@"Hide Playback History", nil)
+    : NSLocalizedString(@"Show Playback History", nil);
+}
+
+- (void)restoreSidebarVisibility {
+  stationsPanelVisible = PREF_KEY_BOOL(STATIONS_PANEL_VISIBLE);
+  historyPanelVisible = PREF_KEY_BOOL(HISTORY_PANEL_VISIBLE);
+  playbackSplitView.leadingPaneVisible = stationsPanelVisible;
+  playbackSplitView.trailingPaneVisible = historyPanelVisible;
   [playbackView layoutSubtreeIfNeeded];
-  NSView *songStack = art.superview;
-  NSView *horizontalStack = historyPanel.superview;
-  artNonArtworkHeight = MAX(0.0, NSHeight(songStack.bounds) -
-                            artWidthConstraint.constant - NSHeight(chosenForSpacer.bounds));
-  CGFloat availableWidth = NSWidth(horizontalStack.bounds) - artHorizontalInset;
-  CGFloat availableHeight = NSHeight(horizontalStack.bounds) - artNonArtworkHeight;
-  return floor(MAX(compactArtSize, MIN(availableWidth, availableHeight)));
+  [self updateTitlebarSidebarToolTips];
 }
 
 - (void)setHistoryPanelVisible:(BOOL)visible {
@@ -418,21 +609,27 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
     return;
   }
 
+  historyPanelVisible = visible;
+  PREF_KEY_SET_BOOL(HISTORY_PANEL_VISIBLE, visible);
+  playbackSplitView.trailingPaneVisible = visible;
   [playbackView layoutSubtreeIfNeeded];
-  if (visible) {
-    [self expandWindowForHistoryIfNeeded];
+  [self updateTitlebarSidebarToolTips];
+}
+
+- (void)setStationsPanelVisible:(BOOL)visible {
+  if (stationsPanel == nil || stationsPanelVisible == visible) {
+    return;
   }
 
-  historyPanelVisible = visible;
-  CGFloat targetArtSize = visible ? compactArtSize : [self expandedArtSize];
-  [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
-    context.duration = HermesHistoryAnimationDuration;
-    context.allowsImplicitAnimation = YES;
-    self->artWidthConstraint.constant = targetArtSize;
-    self->artHeightConstraint.constant = targetArtSize;
-    [[self->historyPanel animator] setHidden:!visible];
-    [self->playbackView layoutSubtreeIfNeeded];
-  } completionHandler:nil];
+  stationsPanelVisible = visible;
+  PREF_KEY_SET_BOOL(STATIONS_PANEL_VISIBLE, visible);
+  playbackSplitView.leadingPaneVisible = visible;
+  [playbackView layoutSubtreeIfNeeded];
+  [self updateTitlebarSidebarToolTips];
+}
+
+- (void)toggleStationsPanel {
+  [self setStationsPanelVisible:!stationsPanelVisible];
 }
 
 - (void)toggleHistoryPanel {
@@ -441,6 +638,29 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 
 - (void)showHistoryPanel {
   [self setHistoryPanelVisible:YES];
+}
+
+- (void)restoreSongInfoVisibility {
+  explanationLabel.hidden = !PREF_KEY_BOOL(SONG_INFO_VISIBLE);
+  [self updateSongInfoToolbarItem];
+  [playbackView layoutSubtreeIfNeeded];
+}
+
+- (void)updateSongInfoToolbarItem {
+  BOOL infoVisible = !explanationLabel.hidden;
+  NSString *symbolName = infoVisible ? @"info.circle.fill" : @"info.circle";
+  songInfoToolbarItem.image = [NSImage imageWithSystemSymbolName:symbolName
+                                        accessibilityDescription:@"Song information"];
+  songInfoToolbarItem.toolTip = infoVisible
+                                  ? @"Hide why this song was chosen"
+                                  : @"Show why this song was chosen";
+}
+
+- (IBAction)toggleSongInfo:(id)sender {
+  explanationLabel.hidden = !explanationLabel.hidden;
+  PREF_KEY_SET_BOOL(SONG_INFO_VISIBLE, !explanationLabel.hidden);
+  [self updateSongInfoToolbarItem];
+  [playbackView layoutSubtreeIfNeeded];
 }
 
 - (void)showToolbar {
@@ -506,10 +726,20 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
     saved = 100;
   }
   [self setIntegerVolume:saved];
+
+  [self restoreSongInfoVisibility];
+  [self restoreSidebarVisibility];
 }
 
 - (Pandora*) pandora {
   return [HMSAppDelegate pandora];
+}
+
+- (id<PlaybackStationModeService>)stationModeService {
+  if (_stationModeService != nil) {
+    return _stationModeService;
+  }
+  return (id<PlaybackStationModeService>)[self pandora];
 }
 
 - (void) reset {
@@ -520,7 +750,12 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 }
 
 - (void) show {
+  [self presentPlaybackView];
+}
+
+- (void)presentPlaybackView {
   [HMSAppDelegate setCurrentView:playbackView];
+  [playbackView layoutSubtreeIfNeeded];
 }
 
 - (void) showSpinner {
@@ -691,7 +926,7 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
     [self setArtImage:self.artImage];
   }
 
-  [HMSAppDelegate setCurrentView:playbackView];
+  [self presentPlaybackView];
 
   [songLabel setStringValue: [song title]];
   [songLabel setToolTip:[song title]];
@@ -869,7 +1104,7 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 /* Load more songs manually */
 - (IBAction)loadMore: (id)sender {
   [self showSpinner];
-  [HMSAppDelegate setCurrentView:playbackView];
+  [self presentPlaybackView];
 
   if ([playing playingSong] != nil) {
     [playing retry];
@@ -933,7 +1168,9 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   stationModeLabel.hidden = NO;
   stationModeLabel.textColor = [NSColor secondaryLabelColor];
   stationModeLabel.stringValue = @"Station Mode: Loading…";
-  [[self pandora] fetchStationModesForStation:station];
+  if (![[self stationModeService] fetchStationModesForStation:station]) {
+    [self showStationModesUnavailable];
+  }
 }
 
 - (void)handleStationModesLoaded:(NSNotification *)notification {
@@ -959,12 +1196,19 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   NSString *currentModeName = nil;
   for (NSDictionary *entry in entries) {
     NSString *name = [entry[@"name"] isKindOfClass:[NSString class]] ? entry[@"name"] : nil;
-    if (name.length == 0) {
+    NSString *identifier = [entry[@"identifier"] isKindOfClass:[NSString class]]
+                               ? entry[@"identifier"]
+                               : nil;
+    if (name.length == 0 || identifier.length == 0) {
       continue;
     }
     BOOL isCurrent = [entry[@"current"] boolValue];
-    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:name action:NULL keyEquivalent:@""];
-    item.enabled = NO;
+    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:name
+                                                  action:@selector(selectStationMode:)
+                                           keyEquivalent:@""];
+    item.target = self;
+    item.representedObject = identifier;
+    item.enabled = YES;
     item.state = isCurrent ? NSControlStateValueOn : NSControlStateValueOff;
     [stationModesMenu addItem:item];
     if (isCurrent) {
@@ -980,6 +1224,30 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   NSString *displayName = currentModeName.length > 0 ? currentModeName : @"—";
   stationModeLabel.stringValue = [NSString stringWithFormat:@"Station Mode: %@", displayName];
   [stationModesMenuItem setEnabled:YES];
+}
+
+- (IBAction)selectStationMode:(id)sender {
+  NSString *modeIdentifier = [sender isKindOfClass:[NSMenuItem class]]
+                               ? [(NSMenuItem *)sender representedObject]
+                               : nil;
+  Station *station = playing;
+  id<PlaybackStationModeService> service = [self stationModeService];
+  if (![modeIdentifier isKindOfClass:[NSString class]] ||
+      modeIdentifier.length == 0 ||
+      station.stationId.length == 0 ||
+      ![service isAuthenticated]) {
+    return;
+  }
+
+  if (![service setMode:modeIdentifier forStation:station]) {
+    return;
+  }
+
+  stationModeLabel.hidden = NO;
+  stationModeLabel.textColor = [NSColor secondaryLabelColor];
+  stationModeLabel.stringValue = @"Station Mode: Loading…";
+  [station clearSongList];
+  [self next:sender];
 }
 
 - (void)showStationModesUnavailable {
@@ -1083,13 +1351,22 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-  if (![[self pandora] isAuthenticated]) {
+  if (![[self stationModeService] isAuthenticated]) {
     return NO;
   }
 
   SEL action = [item action];
 
   NSObject *validatedObject = (NSObject *)item;
+
+  if (action == @selector(selectStationMode:)) {
+    NSString *modeIdentifier = [validatedObject isKindOfClass:[NSMenuItem class]]
+                                 ? [(NSMenuItem *)validatedObject representedObject]
+                                 : nil;
+    return playing.stationId.length > 0 &&
+           [modeIdentifier isKindOfClass:[NSString class]] &&
+           modeIdentifier.length > 0;
+  }
 
   if (action == @selector(playpause:)) {
     BOOL hasPlayableStation = (playing != nil);

@@ -8,7 +8,7 @@
 #import <SPMediaKeyTap/SPMediaKeyTap.h>
 #import <MediaPlayer/MediaPlayer.h>
 
-#import "HermesAppDelegate.h"
+#import "ApolloGeneAppDelegate.h"
 // Add this to the top with other imports:
 #import <AudioToolbox/AudioToolbox.h>
 
@@ -346,6 +346,9 @@ static void DummyPacketsProc(void *inClientData,
     PROXY_AUDIO:                @"0",
     DESIRED_QUALITY:            @QUALITY_MED,
     OPEN_DRAWER:                @DRAWER_STATIONS,
+    STATIONS_PANEL_VISIBLE:     @YES,
+    HISTORY_PANEL_VISIBLE:      @YES,
+    SONG_INFO_VISIBLE:         @NO,
     HIST_DRAWER_WIDTH:          @150,
     DRAWER_WIDTH:               @130,
     GROWL_TYPE:                 @GROWL_TYPE_OSX,

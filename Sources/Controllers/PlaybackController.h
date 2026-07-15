@@ -6,6 +6,14 @@
 
 @class Song;
 @class MPRemoteCommandCenter;
+@class SPMediaKeyTap;
+@class PlaybackSplitView;
+
+@protocol PlaybackStationModeService <NSObject>
+- (BOOL)isAuthenticated;
+- (BOOL)fetchStationModesForStation:(Station *)station;
+- (BOOL)setMode:(NSString *)modeIdentifier forStation:(Station *)station;
+@end
 
 // XXX macOS 10.12.2 exposes media keys; 10.12.3 doesn't
 #define MPREMOTECOMMANDCENTER_MEDIA_KEYS_BROKEN 1
@@ -32,10 +40,10 @@
   IBOutlet NSTextField *stationModeLabel;
   IBOutlet NSMenu *stationModesMenu;
   IBOutlet NSMenuItem *stationModesMenuItem;
+  IBOutlet NSStackView *songStack;
+  IBOutlet NSScrollView *stationsPanel;
   IBOutlet NSStackView *historyPanel;
-  IBOutlet NSView *chosenForSpacer;
-  IBOutlet NSLayoutConstraint *artWidthConstraint;
-  IBOutlet NSLayoutConstraint *artHeightConstraint;
+  PlaybackSplitView *playbackSplitView;
 
   // Playback related items
   IBOutlet NSToolbarItem *like;
@@ -43,19 +51,22 @@
   IBOutlet NSToolbarItem *playpause;
   IBOutlet NSToolbarItem *nextSong;
   IBOutlet NSToolbarItem *tiredOfSong;
+  IBOutlet NSToolbarItem *songInfoToolbarItem;
   IBOutlet NSSlider *volume;
   IBOutlet NSToolbar *toolbar;
+
+  NSButton *stationsTitlebarButton;
+  NSButton *historyTitlebarButton;
+  NSTextField *titlebarTitleLabel;
 
   NSTimer *progressUpdateTimer;
   BOOL scrobbleSent;
   NSString *lastImgSrc;
   NSData *lastImg;
   BOOL presentedInputMonitoringAlert;
+  BOOL stationsPanelVisible;
   BOOL historyPanelVisible;
-  CGFloat compactArtSize;
-  CGFloat artHorizontalInset;
-  CGFloat artNonArtworkHeight;
-  CGFloat minimumHistoryContentWidth;
+  id<PlaybackStationModeService> _stationModeService;
 }
 
 @property (readonly) Station *playing;
@@ -67,6 +78,7 @@
 
 @property (readonly) MPRemoteCommandCenter *remoteCommandCenter;
 @property (readonly) SPMediaKeyTap *mediaKeyTap;
+@property (nonatomic, strong) id<PlaybackStationModeService> stationModeService;
 
 + (void) setPlayOnStart: (BOOL)play;
 + (BOOL) playOnStart;
@@ -96,6 +108,8 @@
 - (IBAction)like: (id) sender;
 - (IBAction)dislike: (id) sender;
 - (IBAction)tired: (id) sender;
+- (IBAction)selectStationMode:(id)sender;
+- (IBAction)toggleSongInfo:(id)sender;
 - (IBAction)loadMore: (id)sender;
 - (IBAction)songURL: (id)sender;
 - (IBAction)artistURL: (id)sender;
@@ -109,6 +123,7 @@
 - (void)presentInputMonitoringInstructionsAllowingRepeat;
 - (void)openInputMonitoringPreferences;
 - (void)requestInputMonitoringReminderIfNeeded;
+- (void)toggleStationsPanel;
 - (void)toggleHistoryPanel;
 - (void)showHistoryPanel;
 

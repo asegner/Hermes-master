@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C0D3A70130C0000000000001 /* ArtworkButton.m in Sources */ = {isa = PBXBuildFile; fileRef = C0D3A70130C0000000000003 /* ArtworkButton.m */; };
+		C0D3A70230C0000000000001 /* PlaybackSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = C0D3A70230C0000000000003 /* PlaybackSplitView.m */; };
 		0F795D352EB711670009B05D /* AudioBufferManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F795D342EB711670009B05D /* AudioBufferManager.m */; };
 		0F795D7B2EB7D51D0009B05D /* default.metallib in Resources */ = {isa = PBXBuildFile; fileRef = 0F795D7A2EB7D51D0009B05D /* default.metallib */; };
 		0F828EA42CD93B7200C35281 /* NotificationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F828EA32CD93A5900C35281 /* NotificationManager.m */; };
@@ -115,6 +117,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C0D3A70130C0000000000002 /* ArtworkButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ArtworkButton.h; path = Views/ArtworkButton.h; sourceTree = "<group>"; };
+		C0D3A70130C0000000000003 /* ArtworkButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ArtworkButton.m; path = Views/ArtworkButton.m; sourceTree = "<group>"; };
+		C0D3A70230C0000000000002 /* PlaybackSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlaybackSplitView.h; path = Views/PlaybackSplitView.h; sourceTree = "<group>"; };
+		C0D3A70230C0000000000003 /* PlaybackSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PlaybackSplitView.m; path = Views/PlaybackSplitView.m; sourceTree = "<group>"; };
 		0F6DE6172E257EB80025AB31 /* Hermes.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Hermes.entitlements; sourceTree = "<group>"; };
 		0F795D2F2EB6F2B00009B05D /* HermesTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HermesTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		0F795D342EB711670009B05D /* AudioBufferManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioBufferManager.m; sourceTree = "<group>"; };
@@ -132,7 +138,7 @@
 		0FE769702C8EB09F00E3189E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
-		256AC3D80F4B6AC300CF3369 /* HermesAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HermesAppDelegate.h; sourceTree = "<group>"; };
+		256AC3D80F4B6AC300CF3369 /* ApolloGeneAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ApolloGeneAppDelegate.h; sourceTree = "<group>"; };
 		256AC3D90F4B6AC300CF3369 /* ApolloGeneAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ApolloGeneAppDelegate.m; sourceTree = "<group>"; wrapsLines = 0; };
 		256AC3F00F4B6AF500CF3369 /* ApolloGene_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ApolloGene_Prefix.pch; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -312,7 +318,7 @@
 				FA0E5568147855AB00C36794 /* Controllers */,
 				FA0E55671478559200C36794 /* Integration */,
 				FA2A3F90132BF9F50089AECC /* Pandora */,
-				256AC3D80F4B6AC300CF3369 /* HermesAppDelegate.h */,
+				256AC3D80F4B6AC300CF3369 /* ApolloGeneAppDelegate.h */,
 				256AC3D90F4B6AC300CF3369 /* ApolloGeneAppDelegate.m */,
 				E124109818EBAF6F007AF091 /* ApolloGeneApp.h */,
 				E124109918EBAF6F007AF091 /* ApolloGeneApp.m */,
@@ -457,6 +463,10 @@
 		B2A26AF01AE39E9F00ADD460 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C0D3A70130C0000000000002 /* ArtworkButton.h */,
+				C0D3A70130C0000000000003 /* ArtworkButton.m */,
+				C0D3A70230C0000000000002 /* PlaybackSplitView.h */,
+				C0D3A70230C0000000000003 /* PlaybackSplitView.m */,
 				E17E8D0C1D82E27A00B14840 /* HermesBackgroundView.h */,
 				E17E8D0D1D82E27A00B14840 /* HermesBackgroundView.m */,
 				E145363B1D84CD4400DE7AFB /* HermesMainWindow.h */,
@@ -737,6 +747,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D3A70130C0000000000001 /* ArtworkButton.m in Sources */,
+				C0D3A70230C0000000000001 /* PlaybackSplitView.m in Sources */,
 				441C9F101CC815A1000A0302 /* NSObject+SPInvocationGrabbing.m in Sources */,
 				441C9F121CC815A1000A0302 /* SPMediaKeyTap.m in Sources */,
 				441C9F0E1CC80AA0000A0302 /* ASPlaylist.m in Sources */,

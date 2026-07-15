@@ -1,4 +1,4 @@
-//hermes app delegate .h
+// ApolloGene app delegate
 #import "Pandora.h"
 // add cocoa
 #import <Cocoa/Cocoa.h>
@@ -38,7 +38,6 @@
   NSTimer *autoRetry;
 
   IBOutlet NSWindow *newStationSheet;
-  IBOutlet NSToolbarItem *drawerToggle;
   IBOutlet NSMenu *statusBarMenu;
 
   /* Status bar menu */

@@ -337,7 +337,7 @@ MgA3AEkATABRAFMAXQBjAGwAcwB4AIAAlQCXAJkAmwCdAKcArACxALwAvwDBAMMAxQDKANUA3gDmAOkA
                     </caTransition>
                 </animations>
             </view>
-            <toolbar key="toolbar" implicitIdentifier="523691DA-3184-4F47-A885-9465F8ED1820" showsBaselineSeparator="NO" displayMode="iconAndLabel" sizeMode="regular" id="768">
+            <toolbar key="toolbar" implicitIdentifier="523691DA-3184-4F47-A885-9465F8ED1820" showsBaselineSeparator="NO" displayMode="iconOnly" sizeMode="regular" id="768">
                 <allowedToolbarItems>
                     <toolbarItem implicitItemIdentifier="93E09D6C-9E59-4A3C-A062-D1300904AE9D" label="Play" paletteLabel="Play/Pause" toolTip="Play/pause the current song" tag="-1" image="play" sizingBehavior="auto" id="776">
                         <connections>
@@ -347,11 +347,6 @@ MgA3AEkATABRAFMAXQBjAGwAcwB4AIAAlQCXAJkAmwCdAKcArACxALwAvwDBAMMAxQDKANUA3gDmAOkA
                     <toolbarItem implicitItemIdentifier="C1F73AAE-CA9B-4AE4-84F0-6FD469CA5403" label="Next Song" paletteLabel="Next Song" toolTip="Skip current song" tag="-1" image="fast_forward" sizingBehavior="auto" id="777">
                         <connections>
                             <action selector="next:" target="835" id="853"/>
-                        </connections>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="63378708-9425-4BEA-BDC4-0A119EA2829F" label="History" paletteLabel="History" toolTip="Show or hide playback history" tag="-1" image="history" sizingBehavior="auto" id="1328">
-                        <connections>
-                            <action selector="toggleDrawerContent:" target="494" id="2226"/>
                         </connections>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="A449647C-5E3D-4B0A-A7A9-25D95931BEAA" explicitItemIdentifier="like" label="Like" paletteLabel="Like" toolTip="Like current song" tag="-1" image="thumbup" sizingBehavior="auto" selectable="YES" id="818">
@@ -369,16 +364,21 @@ MgA3AEkATABRAFMAXQBjAGwAcwB4AIAAlQCXAJkAmwCdAKcArACxALwAvwDBAMMAxQDKANUA3gDmAOkA
                             <action selector="tired:" target="835" id="850"/>
                         </connections>
                     </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="B4CD5237-7F03-40E0-91C3-4B5E6C40FE1F" explicitItemIdentifier="songInfo" label="Info" paletteLabel="Song Info" toolTip="Show why this song was chosen" tag="-1" sizingBehavior="auto" id="HMS-song-info">
+                        <connections>
+                            <action selector="toggleSongInfo:" target="835" id="HMS-song-info-action"/>
+                        </connections>
+                    </toolbarItem>
                     <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="774"/>
                     <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="773"/>
                 </allowedToolbarItems>
                 <defaultToolbarItems>
                     <toolbarItem reference="776"/>
                     <toolbarItem reference="777"/>
-                    <toolbarItem reference="1328"/>
                     <toolbarItem reference="774"/>
                     <toolbarItem reference="818"/>
                     <toolbarItem reference="819"/>
+                    <toolbarItem reference="HMS-song-info"/>
                 </defaultToolbarItems>
             </toolbar>
             <userDefinedRuntimeAttributes>
@@ -905,7 +905,6 @@ Gw
                 <outlet property="auth" destination="659" id="669"/>
                 <outlet property="currentArtist" destination="2319" id="2367"/>
                 <outlet property="currentSong" destination="2311" id="2366"/>
-                <outlet property="drawerToggle" destination="1328" id="2234"/>
                 <outlet property="errorButton" destination="1807" id="1809"/>
                 <outlet property="errorLabel" destination="1263" id="1266"/>
                 <outlet property="errorView" destination="1251" id="1265"/>
@@ -958,11 +957,8 @@ Gw
             <connections>
                 <outlet property="albumLabel" destination="1170" id="1240"/>
                 <outlet property="art" destination="2436" id="2439"/>
-                <outlet property="artHeightConstraint" destination="ECG-2X-yCe" id="Cdx-yI-Ah1"/>
                 <outlet property="artLoading" destination="1249" id="1250"/>
-                <outlet property="artWidthConstraint" destination="3xZ-YG-gPR" id="Cdx-yI-Aw1"/>
                 <outlet property="artistLabel" destination="1173" id="1243"/>
-                <outlet property="chosenForSpacer" destination="Cdx-yI-Cfs" id="Cdx-yI-Cfo"/>
                 <outlet property="dislike" destination="819" id="2271"/>
                 <outlet property="explanationLabel" destination="Mwv-sA-ua1" id="pZX-OF-ZC6"/>
                 <outlet property="historyPanel" destination="wAm-n0-TIB" id="Cdx-yI-Hp1"/>
@@ -972,11 +968,14 @@ Gw
                 <outlet property="playbackView" destination="1155" id="1238"/>
                 <outlet property="playpause" destination="776" id="845"/>
                 <outlet property="progressLabel" destination="1156" id="1245"/>
+                <outlet property="songInfoToolbarItem" destination="HMS-song-info" id="HMS-song-info-outlet"/>
                 <outlet property="songLabel" destination="1172" id="1244"/>
                 <outlet property="songLoadingProgress" destination="1160" id="1246"/>
+                <outlet property="songStack" destination="2tX-eR-9Av" id="Cdx-yI-SS1"/>
                 <outlet property="stationModeLabel" destination="qrv-8Y-Uid" id="cG2-5B-PpC"/>
                 <outlet property="stationModesMenu" destination="GCI-gN-aTQ" id="dbR-CJ-l2Q"/>
                 <outlet property="stationModesMenuItem" destination="u95-GB-4fj" id="sVR-YT-EEz"/>
+                <outlet property="stationsPanel" destination="3m8-kZ-bMO" id="Cdx-yI-Sp1"/>
                 <outlet property="tiredOfSong" destination="820" id="nFf-SX-qEV"/>
                 <outlet property="toolbar" destination="768" id="844"/>
                 <outlet property="volume" destination="1158" id="1247"/>
@@ -1142,30 +1141,30 @@ DQ
             <rect key="frame" x="0.0" y="0.0" width="714" height="418"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
-                <stackView autoresizesSubviews="NO" distribution="fill" orientation="horizontal" alignment="top" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GqR-eM-x7f" userLabel="HStack View">
+                <stackView autoresizesSubviews="NO" distribution="fill" orientation="horizontal" alignment="top" spacing="0.0" horizontalStackHuggingPriority="1" horizontalCompressionResistancePriority="1" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GqR-eM-x7f" userLabel="Legacy Playback Row">
                     <rect key="frame" x="209" y="1" width="504" height="416"/>
                     <subviews>
                         <stackView autoresizesSubviews="NO" distribution="fill" orientation="vertical" alignment="leading" spacing="1" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" translatesAutoresizingMaskIntoConstraints="NO" id="2tX-eR-9Av" userLabel="VPlayback Song Stack View">
                             <rect key="frame" x="0.0" y="95" width="220" height="321"/>
                             <subviews>
-                                <button autoresizesSubviews="NO" horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" placeholderIntrinsicWidth="12" placeholderIntrinsicHeight="120" translatesAutoresizingMaskIntoConstraints="NO" id="2436" userLabel="AlbumCoverSquare">
-                                    <rect key="frame" x="0.0" y="120" width="200" height="202"/>
-                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="axesIndependently" inset="2" id="2437">
-                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system" size="14"/>
-                                    </buttonCell>
-                                    <constraints>
-                                        <constraint firstAttribute="width" constant="200" id="3xZ-YG-gPR"/>
-                                        <constraint firstAttribute="height" constant="200" id="ECG-2X-yCe"/>
-                                        <constraint firstAttribute="width" secondItem="2436" secondAttribute="height" multiplier="1:1" id="hW2-kl-WMx"/>
-                                    </constraints>
-                                    <userDefinedRuntimeAttributes>
-                                        <userDefinedRuntimeAttribute type="boolean" keyPath="showsBorderOnlyWhileMouseInside" value="YES"/>
-                                    </userDefinedRuntimeAttributes>
-                                    <connections>
-                                        <action selector="quickLookArt:" target="835" id="2438"/>
-                                    </connections>
-                                </button>
+                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="Cdx-yI-Art" userLabel="Centered Album Art Container" customClass="ArtworkContainerView">
+                                    <rect key="frame" x="0.0" y="120" width="220" height="202"/>
+                                    <subviews>
+                                        <button autoresizesSubviews="NO" placeholderIntrinsicWidth="12" placeholderIntrinsicHeight="120" translatesAutoresizingMaskIntoConstraints="NO" id="2436" userLabel="AlbumCoverSquare" customClass="ArtworkButton">
+                                            <rect key="frame" x="10" y="1" width="200" height="200"/>
+                                            <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyUpOrDown" inset="2" id="2437">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system" size="14"/>
+                                            </buttonCell>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="boolean" keyPath="showsBorderOnlyWhileMouseInside" value="YES"/>
+                                            </userDefinedRuntimeAttributes>
+                                            <connections>
+                                                <action selector="quickLookArt:" target="835" id="2438"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </customView>
                                 <textField toolTip="Song Artist" focusRingType="none" horizontalHuggingPriority="300" verticalHuggingPriority="750" horizontalCompressionResistancePriority="999" verticalCompressionResistancePriority="999" allowsCharacterPickerTouchBarItem="YES" preferredMaxLayoutWidth="202" translatesAutoresizingMaskIntoConstraints="NO" id="1173" userLabel="Artist Label Hover Show Field" customClass="LabelHoverShowField">
                                     <rect key="frame" x="-2" y="105" width="35" height="15"/>
                                     <constraints>
@@ -1215,33 +1214,14 @@ DQ
                                     <rect key="frame" x="-2" y="59" width="202" height="15"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="11" id="Hba-ua-w6D"/>
-                                        <constraint firstAttribute="width" constant="198" id="v5s-SS-FEH"/>
                                     </constraints>
                                     <shadow key="shadow">
                                         <color key="color" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                     </shadow>
                                     <sliderCell key="cell" controlSize="mini" alignment="left" maxValue="100" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="9lo-wA-JHN" customClass="MusicProgressSliderCell"/>
                                 </slider>
-                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qrv-8Y-Uid">
-                                    <rect key="frame" x="-2" y="45" width="76" height="15"/>
-                                    <textFieldCell key="cell" controlSize="small" lineBreakMode="clipping" title="StationMode" id="1Rp-aE-lqI">
-                                        <font key="font" metaFont="cellTitle"/>
-                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    </textFieldCell>
-                                </textField>
-                                <slider toolTip="Volume Control" wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1158" userLabel="Volume Horizontal Slider">
-                                    <rect key="frame" x="-2" y="10" width="202" height="20"/>
-                                    <constraints>
-                                        <constraint firstAttribute="width" constant="198" id="sB5-1F-HT7"/>
-                                    </constraints>
-                                    <sliderCell key="cell" controlSize="small" continuous="YES" state="on" alignment="left" maxValue="100" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="1186" customClass="HermesVolumeSliderCell"/>
-                                    <connections>
-                                        <action selector="volumeChanged:" target="835" id="1189"/>
-                                    </connections>
-                                </slider>
                                 <textField toolTip="Playback Progress" focusRingType="none" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1156" userLabel="PlaybackTime 0:00/0:00">
-                                    <rect key="frame" x="-2" y="0.0" width="48" height="11"/>
+                                    <rect key="frame" x="-2" y="45" width="48" height="11"/>
                                     <constraints>
                                         <constraint firstAttribute="width" priority="1" constant="212" id="xkV-OU-ALp"/>
                                     </constraints>
@@ -1251,10 +1231,25 @@ DQ
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                 </textField>
-                                <customView verticalHuggingPriority="1" verticalCompressionResistancePriority="1" translatesAutoresizingMaskIntoConstraints="NO" id="Cdx-yI-Cfs" userLabel="Chosen For Flexible Spacer">
+                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qrv-8Y-Uid">
+                                    <rect key="frame" x="-2" y="30" width="76" height="15"/>
+                                    <textFieldCell key="cell" controlSize="small" lineBreakMode="clipping" title="StationMode" id="1Rp-aE-lqI">
+                                        <font key="font" metaFont="cellTitle"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <slider toolTip="Volume Control" wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1158" userLabel="Volume Horizontal Slider">
+                                    <rect key="frame" x="-2" y="10" width="202" height="20"/>
+                                    <sliderCell key="cell" controlSize="small" continuous="YES" state="on" alignment="left" maxValue="100" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="1186" customClass="HermesVolumeSliderCell"/>
+                                    <connections>
+                                        <action selector="volumeChanged:" target="835" id="1189"/>
+                                    </connections>
+                                </slider>
+                                <customView hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Cdx-yI-Cfs" userLabel="Chosen For Flexible Spacer">
                                     <rect key="frame" x="0.0" y="15" width="1" height="95"/>
                                 </customView>
-                                <textField identifier="explanationLabel" focusRingType="none" horizontalHuggingPriority="300" verticalHuggingPriority="750" horizontalCompressionResistancePriority="800" translatesAutoresizingMaskIntoConstraints="NO" id="Mwv-sA-ua1">
+                                <textField hidden="YES" identifier="explanationLabel" focusRingType="none" horizontalHuggingPriority="300" verticalHuggingPriority="750" horizontalCompressionResistancePriority="800" translatesAutoresizingMaskIntoConstraints="NO" id="Mwv-sA-ua1">
                                     <rect key="frame" x="-2" y="0.0" width="100" height="15"/>
                                     <constraints>
                                         <constraint firstAttribute="height" relation="lessThanOrEqual" constant="110" id="eqe-B1-AYM"/>
@@ -1268,7 +1263,9 @@ DQ
                                 </textField>
                             </subviews>
                             <constraints>
-                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="220" id="hiR-sk-OLS"/>
+                                <constraint firstItem="Cdx-yI-Art" firstAttribute="width" secondItem="2tX-eR-9Av" secondAttribute="width" id="Cdx-yI-Aw2"/>
+                                <constraint firstItem="7eu-hy-jM9" firstAttribute="width" secondItem="Cdx-yI-Art" secondAttribute="width" id="Cdx-yI-Pw1"/>
+                                <constraint firstItem="1158" firstAttribute="width" secondItem="Cdx-yI-Art" secondAttribute="width" id="Cdx-yI-Vw1"/>
                             </constraints>
                             <visibilityPriorities>
                                 <integer value="1000"/>
@@ -1295,13 +1292,14 @@ DQ
                                 <real value="3.4028234663852886e+38"/>
                             </customSpacing>
                         </stackView>
-                        <stackView distribution="fill" orientation="vertical" alignment="width" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wAm-n0-TIB" userLabel="HistoryStack View">
+                        <stackView distribution="fill" orientation="vertical" alignment="width" spacing="0.0" horizontalStackHuggingPriority="1" horizontalCompressionResistancePriority="1" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wAm-n0-TIB" userLabel="HistoryStack View">
                             <rect key="frame" x="220" y="1" width="284" height="414"/>
                             <subviews>
-                                <collectionView maxNumberOfRows="11" maxNumberOfColumns="1" selectable="YES" allowsMultipleSelection="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7eQ-hl-E1A" customClass="HistoryCollectionView">
+                                <collectionView maxNumberOfRows="11" maxNumberOfColumns="1" selectable="YES" allowsMultipleSelection="YES" horizontalHuggingPriority="1" horizontalCompressionResistancePriority="1" translatesAutoresizingMaskIntoConstraints="NO" id="7eQ-hl-E1A" customClass="HistoryCollectionView">
                                     <rect key="frame" x="0.0" y="0.0" width="198" height="414"/>
                                     <constraints>
-                                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="180" id="Gee-qw-5mn"/>
+                                        <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="250" constant="180" id="Gee-qw-5mn"/>
+                                        <constraint firstAttribute="width" priority="250" constant="198" id="Cdx-yI-Hcw"/>
                                     </constraints>
                                     <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <color key="secondaryBackgroundColor" name="controlAlternatingRowColor" catalog="System" colorSpace="catalog"/>
@@ -1313,9 +1311,6 @@ DQ
                                     </connections>
                                 </collectionView>
                             </subviews>
-                            <constraints>
-                                <constraint firstAttribute="width" relation="greaterThanOrEqual" priority="750" constant="198" id="Cdx-yI-Hmw"/>
-                            </constraints>
                             <visibilityPriorities>
                                 <integer value="1000"/>
                             </visibilityPriorities>
@@ -1331,14 +1326,14 @@ DQ
                     </constraints>
                     <visibilityPriorities>
                         <integer value="1000"/>
-                        <real value="900"/>
+                        <integer value="1000"/>
                     </visibilityPriorities>
                     <customSpacing>
                         <real value="3.4028234663852886e+38"/>
                         <real value="3.4028234663852886e+38"/>
                     </customSpacing>
                 </stackView>
-                <scrollView autoresizesSubviews="NO" toolTip="Station list" horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" placeholderIntrinsicWidth="128" placeholderIntrinsicHeight="416" autohidesScrollers="YES" horizontalLineScroll="25" horizontalPageScroll="10" verticalLineScroll="25" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3m8-kZ-bMO">
+                <scrollView autoresizesSubviews="NO" toolTip="Station list" horizontalHuggingPriority="1" verticalHuggingPriority="250" horizontalCompressionResistancePriority="1" verticalCompressionResistancePriority="250" placeholderIntrinsicWidth="128" placeholderIntrinsicHeight="416" autohidesScrollers="YES" horizontalLineScroll="25" horizontalPageScroll="10" verticalLineScroll="25" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3m8-kZ-bMO">
                     <rect key="frame" x="1" y="1" width="198" height="416"/>
                     <clipView key="contentView" id="PDw-fH-Y5P">
                         <rect key="frame" x="1" y="1" width="196" height="414"/>
@@ -1389,7 +1384,7 @@ DQ
                         <edgeInsets key="contentInsets" left="0.0" right="0.0" top="0.0" bottom="0.0"/>
                     </clipView>
                     <constraints>
-                        <constraint firstAttribute="width" constant="198" id="Mv2-yX-VNP"/>
+                        <constraint firstAttribute="width" priority="250" constant="198" id="Mv2-yX-VNP"/>
                     </constraints>
                     <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="dFf-4P-oQs">
                         <rect key="frame" x="1" y="393" width="126" height="16"/>

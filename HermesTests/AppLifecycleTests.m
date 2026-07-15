@@ -1,7 +1,7 @@
 #import <XCTest/XCTest.h>
 #import <MediaPlayer/MediaPlayer.h>
 
-#import "HermesAppDelegate.h"
+#import "ApolloGeneAppDelegate.h"
 #import "PreferencesController.h"
 
 @interface HermesAppDelegate (NowPlayingTests)
