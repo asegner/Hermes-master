@@ -316,7 +316,7 @@
             </items>
             <point key="canvasLocation" x="162" y="496"/>
         </menu>
-        <window title="Hermes" separatorStyle="line" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hasShadow="NO" releasedWhenClosed="NO" appearanceType="aqua" frameAutosaveName="Preferences" animationBehavior="default" tabbingMode="disallowed" toolbarStyle="expanded" id="371" userLabel="Main Window" customClass="HermesMainWindow">
+        <window title="Hermes" separatorStyle="line" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hasShadow="NO" releasedWhenClosed="NO" frameAutosaveName="Preferences" animationBehavior="default" tabbingMode="disallowed" toolbarStyle="expanded" id="371" userLabel="Main Window" customClass="HermesMainWindow">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="300" y="434" width="314" height="284"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="900"/>
@@ -387,7 +387,7 @@ MgA3AEkATABRAFMAXQBjAGwAcwB4AIAAlQCXAJkAmwCdAKcArACxALwAvwDBAMMAxQDKANUA3gDmAOkA
             <point key="canvasLocation" x="76" y="-308"/>
         </window>
         <customObject id="420" customClass="NSFontManager"/>
-        <customView appearanceType="aqua" id="701" userLabel="Stations Drawer" customClass="HermesBackgroundView">
+        <customView id="701" userLabel="Stations Drawer" customClass="HermesBackgroundView">
             <rect key="frame" x="0.0" y="0.0" width="303" height="297"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
@@ -529,7 +529,7 @@ DQ
             </subviews>
             <point key="canvasLocation" x="69" y="46"/>
         </customView>
-        <customView appearanceType="aqua" id="2155" userLabel="History Drawer" customClass="HermesBackgroundView">
+        <customView id="2155" userLabel="History Drawer" customClass="HermesBackgroundView">
             <rect key="frame" x="0.0" y="0.0" width="297" height="280"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
@@ -863,7 +863,7 @@ Gw
             <point key="canvasLocation" x="244" y="255.5"/>
         </window>
         <userDefaultsController representsSharedInstance="YES" id="979"/>
-        <window title="Preferences" separatorStyle="line" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hasShadow="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" appearanceType="aqua" frameAutosaveName="Hermes Preferences" animationBehavior="default" toolbarStyle="expanded" id="1112" userLabel="Preferences Window">
+        <window title="Preferences" separatorStyle="line" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hasShadow="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="Hermes Preferences" animationBehavior="default" toolbarStyle="expanded" id="1112" userLabel="Preferences Window">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <rect key="contentRect" x="0.0" y="0.0" width="362" height="451"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="900"/>

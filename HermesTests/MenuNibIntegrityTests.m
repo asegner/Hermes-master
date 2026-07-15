@@ -60,4 +60,17 @@
   }
 }
 
+- (void)testMainMenuNibDoesNotForceAquaAppearance {
+  NSError *error = nil;
+  NSXMLDocument *document = [self mainMenuDocumentWithError:&error];
+  XCTAssertNotNil(document);
+  XCTAssertNil(error);
+
+  NSArray<NSXMLNode *> *forcedAquaElements =
+      [document nodesForXPath:@"//*[@appearanceType='aqua']" error:&error];
+  XCTAssertNil(error);
+  XCTAssertEqual(forcedAquaElements.count, 0,
+                 @"MainMenu.xib should inherit the system appearance");
+}
+
 @end
