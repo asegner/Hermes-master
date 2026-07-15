@@ -35,6 +35,10 @@
 @property (strong, nonatomic) NSMenuItem *inputMonitoringMenuItem;
 @property (strong, nonatomic) NSMenuItem *inputMonitoringSeparator;
 
++ (MPMediaItemArtwork *)mediaItemArtworkForImage:(NSImage *)image;
+- (void)updateNowPlayingInfoForPlaybackState:(MPNowPlayingPlaybackState)playbackState;
+- (void)playbackArtworkChanged:(NSNotification *)notification;
+
 @end
 
 @implementation HermesAppDelegate
@@ -308,6 +312,9 @@ static void DummyPacketsProc(void *inClientData,
 
   [notificationCenter addObserver:self selector:@selector(playbackStateChanged:)
                              name:ASStatusChangedNotification object:nil];
+
+  [notificationCenter addObserver:self selector:@selector(playbackArtworkChanged:)
+                             name:PlaybackArtworkDidChangeNotification object:playback];
 
   // See http://developer.apple.com/mac/library/qa/qa2004/qa1340.html
   [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver: self
@@ -911,49 +918,95 @@ static void DummyPacketsProc(void *inClientData,
     currentArtist.hidden = YES;
     statusItem.button.toolTip = nil;
   }
+
+  MPNowPlayingInfoCenter *nowPlayingInfoCenter = [MPNowPlayingInfoCenter defaultCenter];
+  [self updateNowPlayingInfoForPlaybackState:nowPlayingInfoCenter.playbackState];
+}
+
++ (MPMediaItemArtwork *)mediaItemArtworkForImage:(NSImage *)image {
+  if (image == nil || image.size.width <= 0 || image.size.height <= 0) {
+    return nil;
+  }
+
+  NSImage *sourceImage = [image copy];
+  return [[MPMediaItemArtwork alloc]
+      initWithBoundsSize:sourceImage.size
+          requestHandler:^NSImage *(CGSize requestedSize) {
+    if (requestedSize.width <= 0 || requestedSize.height <= 0) {
+      return sourceImage;
+    }
+
+    NSImage *requestedImage = [sourceImage copy];
+    requestedImage.size = NSSizeFromCGSize(requestedSize);
+    return requestedImage;
+  }];
+}
+
+- (void)updateNowPlayingInfoForPlaybackState:(MPNowPlayingPlaybackState)nowPlayingState {
+  if (![MPNowPlayingInfoCenter class]) {
+    return;
+  }
+
+  MPNowPlayingInfoCenter *nowPlayingInfoCenter = [MPNowPlayingInfoCenter defaultCenter];
+  Station *playing = [playback playing];
+  Song *song = [playing playingSong];
+  if (song == nil) {
+    nowPlayingInfoCenter.playbackState = MPNowPlayingPlaybackStateUnknown;
+    nowPlayingInfoCenter.nowPlayingInfo = nil;
+    return;
+  }
+
+  double progress = 0, duration = 0;
+  [playing progress:&progress];
+  [playing duration:&duration];
+
+  NSMutableDictionary *nowPlayingInfo = [@{
+    MPNowPlayingInfoPropertyMediaType: @(MPNowPlayingInfoMediaTypeAudio),
+    MPMediaItemPropertyArtist: song.artist ?: @"",
+    MPMediaItemPropertyAlbumTitle: song.album ?: @"",
+    MPMediaItemPropertyTitle: song.title ?: @"",
+    MPNowPlayingInfoPropertyElapsedPlaybackTime: @(progress),
+    MPNowPlayingInfoPropertyPlaybackRate: @(nowPlayingState == MPNowPlayingPlaybackStatePlaying ? 1. : 0.),
+    MPMediaItemPropertyPlaybackDuration: @(duration)
+  } mutableCopy];
+
+  if (playback.artImage != nil && playback.artImageSong == song) {
+    MPMediaItemArtwork *artwork = [[self class] mediaItemArtworkForImage:playback.artImage];
+    if (artwork != nil) {
+      nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork;
+    }
+  }
+
+  nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo;
+  nowPlayingInfoCenter.playbackState = nowPlayingState;
+}
+
+- (void)playbackArtworkChanged:(NSNotification *)notification {
+  Song *artworkSong = notification.userInfo[@"song"];
+  if (artworkSong != playback.playing.playingSong) {
+    return;
+  }
+
+  MPNowPlayingInfoCenter *nowPlayingInfoCenter = [MPNowPlayingInfoCenter defaultCenter];
+  [self updateNowPlayingInfoForPlaybackState:nowPlayingInfoCenter.playbackState];
 }
 
 - (void)playbackStateChanged:(NSNotification*) not {
   AudioStreamer *stream = [not object];
   BOOL streamIsPlaying = [stream isPlaying];
-  if (streamIsPlaying) {
-    [playbackState setTitle:@"Pause"];
-  } else {
-    [playbackState setTitle:@"Play"];
-  }
+  [playbackState setTitle:streamIsPlaying ? @"Pause" : @"Play"];
   [self updateWindowTitle];
   [self updateStatusItem:nil];
 
-  if ([MPNowPlayingInfoCenter class]) {
-    MPNowPlayingInfoCenter *nowPlayingInfoCenter = [MPNowPlayingInfoCenter defaultCenter];
-    if (streamIsPlaying) {
-      Station *playing = [playback playing];
-      Song *song = [playing playingSong];
-      if (song == nil) {
-        nowPlayingInfoCenter.playbackState = MPNowPlayingPlaybackStateUnknown;
-        nowPlayingInfoCenter.nowPlayingInfo = nil;
-        return;
-      }
-      double progress = 0, duration = 0;
-      [playing progress:&progress];
-      [playing duration:&duration];
-      nowPlayingInfoCenter.playbackState = MPNowPlayingPlaybackStatePlaying;
-      nowPlayingInfoCenter.nowPlayingInfo = @{
-        MPNowPlayingInfoPropertyMediaType: @(MPNowPlayingInfoMediaTypeAudio),
-        MPMediaItemPropertyArtist: song.artist ?: @"",
-        MPMediaItemPropertyAlbumTitle: song.album ?: @"",
-        MPMediaItemPropertyTitle: song.title ?: @"",
-        MPNowPlayingInfoPropertyElapsedPlaybackTime: @(progress),
-        MPNowPlayingInfoPropertyPlaybackRate: @(1.),
-        @"playbackDuration": @(duration) // XXX MPMediaItemPropertyPlaybackDuration not exposed in 10.12 SDK
-      };
-    } else if ([stream isPaused])
-      nowPlayingInfoCenter.playbackState = MPNowPlayingPlaybackStatePaused;
-    else if ([stream isDone])
-      nowPlayingInfoCenter.playbackState = MPNowPlayingPlaybackStateStopped;
-    else
-      nowPlayingInfoCenter.playbackState = MPNowPlayingPlaybackStateUnknown;
-  }
+  MPNowPlayingPlaybackState nowPlayingState = MPNowPlayingPlaybackStateUnknown;
+  if (streamIsPlaying)
+    nowPlayingState = MPNowPlayingPlaybackStatePlaying;
+  else if ([stream isPaused])
+    nowPlayingState = MPNowPlayingPlaybackStatePaused;
+  else if ([stream isDone])
+    nowPlayingState = MPNowPlayingPlaybackStateStopped;
+
+  [self updateNowPlayingInfoForPlaybackState:nowPlayingState];
 }
 
 - (void) receiveSleepNote: (NSNotification*) note {

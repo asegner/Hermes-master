@@ -52,6 +52,7 @@
 @property (readonly) Station *playing;
 @property (readonly) NSData *lastImg;
 @property (nonatomic, retain) NSImage *artImage;
+@property (nonatomic, readonly) Song *artImageSong;
 @property BOOL pausedByScreensaver;
 @property BOOL pausedByScreenLock;
 

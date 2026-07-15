@@ -510,7 +510,9 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 
 // nil = no image available
 - (void)setArtImage:(NSImage *)artImage {
+  Song *song = [playing playingSong];
   self->_artImage = artImage;
+  self->_artImageSong = song;
   [art setImage:artImage ? artImage : [NSImage imageNamed:@"missing-album"]];
   if (artImage != nil) {
     artImage.accessibilityDescription = [[playing playingSong] title];
@@ -527,6 +529,15 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   [artLoading setHidden:YES];
   [artLoading stopAnimation:nil];
   [self updateQuickLookPreviewWithArt:artImage != nil];
+
+  NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObject:artImage ?: [NSNull null]
+                                                                      forKey:@"artwork"];
+  if (song != nil) {
+    userInfo[@"song"] = song;
+  }
+  [[NSNotificationCenter defaultCenter] postNotificationName:PlaybackArtworkDidChangeNotification
+                                                      object:self
+                                                    userInfo:userInfo];
 }
 
 - (void)updateQuickLookPreviewWithArt:(BOOL)hasArt {
@@ -556,7 +567,7 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   song.playDate = [NSDate date];
 
   /* Prevent a flicker by not loading the same image twice */
-  if ([song art] != lastImgSrc) {
+  if (lastImgSrc == nil || ![lastImgSrc isEqualToString:[song art]]) {
     if ([song art] == nil || [[song art] isEqual: @""]) {
       [self setArtImage:nil];
       if (![self->playing isPaused])
@@ -570,6 +581,11 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
       lastImg = nil;
       [[ImageLoader loader] loadImageURL:lastImgSrc
                                 callback:^(NSData *data) {
+        // A cancelled request can still finish while the next track is starting.
+        // Never let that late callback replace the current track's artwork.
+        if ([self->playing playingSong] != song) {
+          return;
+        }
         NSImage *image = nil;
         self->lastImg = data;
         if (data != nil) {
@@ -586,6 +602,9 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
     }
   } else {
     NSLogd(@"Skipping loading image");
+    // The same album image can legitimately be shared by consecutive tracks.
+    // Re-associate it so Now Playing can safely publish it for the new song.
+    [self setArtImage:self.artImage];
   }
 
   [HMSAppDelegate setCurrentView:playbackView];

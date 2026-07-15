@@ -1,7 +1,12 @@
 #import <XCTest/XCTest.h>
+#import <MediaPlayer/MediaPlayer.h>
 
 #import "HermesAppDelegate.h"
 #import "PreferencesController.h"
+
+@interface HermesAppDelegate (NowPlayingTests)
++ (MPMediaItemArtwork *)mediaItemArtworkForImage:(NSImage *)image;
+@end
 
 @interface AppLifecycleTests : XCTestCase
 @end
@@ -46,6 +51,18 @@
   [window setContentSize:NSMakeSize(640, 480)];
 
   XCTAssertTrue(NSEqualRects(contentScreen.frame, window.contentView.bounds));
+}
+
+- (void)testNowPlayingArtworkProvidesTheRequestedImageSize {
+  NSImage *sourceImage = [[NSImage alloc] initWithSize:NSMakeSize(600, 600)];
+  MPMediaItemArtwork *artwork = [HermesAppDelegate mediaItemArtworkForImage:sourceImage];
+
+  XCTAssertNotNil(artwork);
+  XCTAssertTrue(CGSizeEqualToSize(artwork.bounds.size, CGSizeMake(600, 600)));
+
+  NSImage *requestedImage = [artwork imageWithSize:CGSizeMake(128, 128)];
+  XCTAssertNotNil(requestedImage);
+  XCTAssertTrue(NSEqualSizes(requestedImage.size, NSMakeSize(128, 128)));
 }
 
 @end
