@@ -769,7 +769,8 @@ static void DummyPacketsProc(void *inClientData,
     return;
   }
 
-  window.collectionBehavior = NSWindowCollectionBehaviorMoveToActiveSpace | NSWindowCollectionBehaviorTransient;
+  // Keep the agent app's main window in Mission Control while following the active Space.
+  window.collectionBehavior = NSWindowCollectionBehaviorMoveToActiveSpace | NSWindowCollectionBehaviorManaged;
 
   if (sender != nil) {
     /* If we're not executing at process launch, then the menu bar will remain visible

@@ -60,6 +60,7 @@ xcodebuild \
 
 - Agents must not run XCTest, `xcodebuild test`, `make run`, the app itself, manual UI checks, live Pandora checks, or other functional/runtime tests. Build the requested configuration only and let the developer perform all testing.
 - This machine does not have the private certificate for the project's configured Developer ID identity. Every local agent build must start with `CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO` on the `xcodebuild` command line, as shown above. Do not first attempt `make` or a normally signed build and wait for signing to fail.
+- In sandboxed agent sessions, request the filesystem permission Xcode needs for `~/Library/Developer/Xcode/DerivedData` before the first `xcodebuild` attempt. Do not run an initial sandboxed build that is already known to fail writing DerivedData and then retry it with elevated permission.
 - Disabling signing is strictly a local command-line override. Never weaken or remove checked-in signing, entitlements, or hardened-runtime settings to make a local build pass.
 - Do not use `make install`, `make archive`, `make upload-release`, the upload/archive schemes, `agvtool`, or release scripts without explicit authorization. They may replace `/Applications/ApolloGene.app`, alter versions, require private keys/tokens, upload artifacts, or affect other repositories.
 - Do not redirect new build output into the tracked root-level `*.log`, `test_*.txt`, or `xcresult*.json` artifacts unless the task explicitly concerns those fixtures. Prefer normal command output or a file under `/tmp`.
