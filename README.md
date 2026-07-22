@@ -108,9 +108,8 @@ ways you can develop against Hermes if you really want to.
         # Build with the 'Release' configuration instead of 'Debug'
         make CONFIGURATION=Release [run|dbg]
 
-   Please note that Media Key shortcuts
-   [will not work](https://github.com/nevyn/SPMediaKeyTap/blob/master/SPMediaKeyTap.m#L108)
-   if compiled with `CONFIGURATION=Debug` (the default).
+   Media-key shortcuts use macOS Now Playing controls and are available in
+   both Debug and Release builds.
 
 ## License
 

@@ -10,8 +10,6 @@
 
 
 
-#define PLEASE_BIND_MEDIA          @"pleaseBindMedia"
-#define INPUT_MONITORING_REMINDER_ENABLED @"inputMonitoringReminderEnabled"
 #define PLEASE_SCROBBLE            @"pleaseScrobble"
 #define PLEASE_SCROBBLE_LIKES      @"pleaseScrobbleLikes"
 #define ONLY_SCROBBLE_LIKED        @"onlyScrobbleLiked"
@@ -86,10 +84,6 @@
   //IBOutlet NSButton *notificationEnabled;
 
   
-  IBOutlet NSButton *mediaKeysCheckbox;
-  IBOutlet NSTextField *mediaKeysLabel;
-  NSButton *inputMonitoringReminderButton;
-
   IBOutlet NSButton *statusItemShowColorIcon;
   IBOutlet NSButton *statusItemShowBlackAndWhiteIcon;
   IBOutlet NSButton *statusItemShowAlbumArt;
@@ -110,7 +104,6 @@
 - (IBAction) showNetwork: (id) sender;
 
 - (IBAction) statusItemIconChanged:(id)sender;
-- (IBAction) bindMediaChanged: (id) sender;
 - (IBAction) show: (id) sender;
 
 @end

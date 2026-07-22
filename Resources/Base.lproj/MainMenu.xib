@@ -984,8 +984,6 @@ Gw
         <customObject id="1114" userLabel="PreferencesController" customClass="PreferencesController">
             <connections>
                 <outlet property="general" destination="1610" id="1612"/>
-                <outlet property="mediaKeysCheckbox" destination="1117" id="cu6-2o-Ziw"/>
-                <outlet property="mediaKeysLabel" destination="1550" id="8dv-nE-yQs"/>
                 <outlet property="network" destination="1919" id="2026"/>
                 <outlet property="notificationEnabled" destination="1827" id="2294"/>
                 <outlet property="notificationType" destination="2288" id="2295"/>
@@ -1507,30 +1505,9 @@ DQ
             </connections>
         </arrayController>
         <customView id="1610" userLabel="General Preferences View">
-            <rect key="frame" x="0.0" y="0.0" width="362" height="380"/>
+            <rect key="frame" x="0.0" y="0.0" width="362" height="315"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
             <subviews>
-                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1117">
-                    <rect key="frame" x="18" y="344" width="326" height="18"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Control playback with media keys" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="1118">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="bindMediaChanged:" target="1114" id="P25-fs-chR"/>
-                        <binding destination="979" name="value" keyPath="values.pleaseBindMedia" id="1978"/>
-                    </connections>
-                </button>
-                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1550">
-                    <rect key="frame" x="36" y="314" width="308" height="28"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Use play/pause and next track keys to control ApolloGene from any application." id="1551">
-                        <font key="font" metaFont="system" size="11"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
                 <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2338">
                     <rect key="frame" x="18" y="281" width="326" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>

@@ -8,9 +8,7 @@
  * to these actions as well
  */
 
-#import <SPMediaKeyTap/SPMediaKeyTap.h>
 #import <MediaPlayer/MediaPlayer.h>
-#import <ApplicationServices/ApplicationServices.h>
 //#import "Integration/Growler.h"
 #import "HistoryController.h"
 #import "ImageLoader.h"
@@ -25,15 +23,6 @@ BOOL playOnStart = YES;
 static const CGFloat HermesSongDetailsHorizontalPadding = 10.0;
 static const CGFloat HermesSongDetailsBottomPadding = 8.0;
 static const CGFloat HermesSongDetailsSpacing = 4.0;
-
-static HMSInputMonitoringAccessFunction HermesPreflightListenEventAccess = NULL;
-static HMSInputMonitoringAccessFunction HermesRequestListenEventAccess = NULL;
-
-void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction preflight,
-                                             HMSInputMonitoringAccessFunction request) {
-  HermesPreflightListenEventAccess = preflight;
-  HermesRequestListenEventAccess = request;
-}
 
 @interface NSToolbarItem ()
 - (void)_setAllPossibleLabelsToFit:(NSArray *)toolbarItemLabels;
@@ -54,13 +43,15 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 - (void)configurePlaybackSplitView;
 - (void)restoreSidebarVisibility;
 - (void)presentPlaybackView;
+- (void)configureRemoteCommands;
+- (MPRemoteCommandHandlerStatus)performRemoteCommandAction:(BOOL (^)(void))action;
 @end
 
 @implementation PlaybackController
 
 @synthesize playing;
 @synthesize lastImg;
-@synthesize remoteCommandCenter, mediaKeyTap;
+@synthesize remoteCommandCenter;
 @synthesize stationModeService = _stationModeService;
 
 + (void) setPlayOnStart: (BOOL)play {
@@ -69,131 +60,6 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 
 + (BOOL) playOnStart {
   return playOnStart;
-}
-
-- (BOOL)hasInputMonitoringAccess {
-  if (@available(macOS 10.15, *)) {
-    if (HermesPreflightListenEventAccess == NULL) {
-      HermesPreflightListenEventAccess = CGPreflightListenEventAccess;
-    }
-    if (HermesPreflightListenEventAccess != NULL) {
-      return HermesPreflightListenEventAccess();
-    }
-  }
-  return YES;
-}
-
-- (BOOL)requestInputMonitoringAccessIfNeeded {
-  if (@available(macOS 10.15, *)) {
-    if (HermesPreflightListenEventAccess == NULL) {
-      HermesPreflightListenEventAccess = CGPreflightListenEventAccess;
-    }
-    if (HermesRequestListenEventAccess == NULL) {
-      HermesRequestListenEventAccess = CGRequestListenEventAccess;
-    }
-    if (HermesPreflightListenEventAccess && HermesPreflightListenEventAccess()) {
-      [self notifyInputMonitoringReminderUpdate];
-      return YES;
-    }
-    BOOL granted = HermesRequestListenEventAccess ? HermesRequestListenEventAccess() : YES;
-    if (!granted) {
-      [self presentInputMonitoringInstructions];
-    } else {
-      presentedInputMonitoringAlert = NO;
-    }
-    BOOL hasAccess = HermesPreflightListenEventAccess ? HermesPreflightListenEventAccess() : granted;
-    [self notifyInputMonitoringReminderUpdate];
-    return hasAccess;
-  }
-  return YES;
-}
-
-- (void)presentInputMonitoringInstructions {
-  if (!PREF_KEY_BOOL(INPUT_MONITORING_REMINDER_ENABLED)) {
-    presentedInputMonitoringAlert = NO;
-    return;
-  }
-  if (presentedInputMonitoringAlert) {
-    return;
-  }
-  presentedInputMonitoringAlert = YES;
-  __weak typeof(self) weakSelf = self;
-  dispatch_block_t presentBlock = ^{
-    __strong typeof(weakSelf) strongSelf = weakSelf;
-    if (!strongSelf) {
-      return;
-    }
-    [strongSelf presentInputMonitoringInstructionsAlert];
-  };
-  if ([NSThread isMainThread]) {
-    presentBlock();
-  } else {
-    dispatch_async(dispatch_get_main_queue(), presentBlock);
-  }
-}
-
-- (void)presentInputMonitoringInstructionsAllowingRepeat {
-  __weak typeof(self) weakSelf = self;
-  dispatch_block_t presentBlock = ^{
-    __strong typeof(weakSelf) strongSelf = weakSelf;
-    if (!strongSelf) {
-      return;
-    }
-    [strongSelf presentInputMonitoringInstructionsAlert];
-  };
-  if ([NSThread isMainThread]) {
-    presentBlock();
-  } else {
-    dispatch_async(dispatch_get_main_queue(), presentBlock);
-  }
-}
-
-- (void)openInputMonitoringPreferences {
-  NSURL *settingsURL = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"];
-  if (settingsURL != nil) {
-    [[NSWorkspace sharedWorkspace] openURL:settingsURL];
-  } else {
-    NSLog(@"Hermes: Unable to construct Input Monitoring settings URL.");
-  }
-}
-
-- (BOOL)shouldSurfaceInputMonitoringReminder {
-  if (@available(macOS 10.15, *)) {
-    if (self.mediaKeyTap != nil && PREF_KEY_BOOL(PLEASE_BIND_MEDIA) && PREF_KEY_BOOL(INPUT_MONITORING_REMINDER_ENABLED)) {
-      return ![self hasInputMonitoringAccess];
-    }
-  }
-  return NO;
-}
-
-- (void)notifyInputMonitoringReminderUpdate {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [HMSAppDelegate refreshInputMonitoringReminder];
-  });
-}
-
-- (void)requestInputMonitoringReminderIfNeeded {
-  if ([self shouldSurfaceInputMonitoringReminder]) {
-    [self presentInputMonitoringInstructions];
-  }
-  [self notifyInputMonitoringReminderUpdate];
-}
-
-- (void)presentInputMonitoringInstructionsAlert {
-  NSAlert *alert = [[NSAlert alloc] init];
-  alert.messageText = @"Enable Media Keys";
-  alert.informativeText = @"ApolloGene needs permission in System Settings → Privacy & Security → Input Monitoring to react to media keys. Enable ApolloGene in Input Monitoring so Play/Pause continues working.";
-  [alert addButtonWithTitle:@"Open System Settings"];
-  [alert addButtonWithTitle:@"Not Now"];
-  [alert addButtonWithTitle:@"Don't Remind Me Again"];
-  NSModalResponse response = [alert runModal];
-  if (response == NSAlertFirstButtonReturn) {
-    [self openInputMonitoringPreferences];
-  } else if (response == NSAlertThirdButtonReturn) {
-    PREF_KEY_SET_BOOL(INPUT_MONITORING_REMINDER_ENABLED, NO);
-    presentedInputMonitoringAlert = NO;
-  }
-  [self notifyInputMonitoringReminderUpdate];
 }
 
 - (void)handleSongExplanation:(NSNotification *)notification {
@@ -334,74 +200,107 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
   // become an AppKit window-resize guardrail.
   window.contentMinSize = NSZeroSize;
 
-  // Media keys
-  if ([MPRemoteCommandCenter class] != nil) {
-    remoteCommandCenter = [MPRemoteCommandCenter sharedCommandCenter];
-    // remoteCommandCenter.previousTrackCommand.enabled = NO;
-    [remoteCommandCenter.playCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-      return [self play] ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusCommandFailed;
-    }];
-    [remoteCommandCenter.pauseCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-      return [self pause] ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusCommandFailed;
-    }];
-    // XXX Doesn't show up in the Touch Bar as of 10.12.2 unless there is a previousTrackCommand registered
-    [remoteCommandCenter.nextTrackCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-      [self next:self];
-      return MPRemoteCommandHandlerStatusSuccess;
-    }];
-#ifndef MPREMOTECOMMANDCENTER_MEDIA_KEYS_BROKEN
-    // XXX This gets triggered seemingly at random.
-    [remoteCommandCenter.togglePlayPauseCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-      [self playpause:self];
-      return MPRemoteCommandHandlerStatusSuccess;
-    }];
-#endif
-    [remoteCommandCenter.likeCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-      [self like:self];
-      return MPRemoteCommandHandlerStatusSuccess;
-    }];
-    [remoteCommandCenter.dislikeCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-      [self dislike:self];
-      return MPRemoteCommandHandlerStatusSuccess;
-    }];
-  }
-#ifndef DEBUG
-#ifndef MPREMOTECOMMANDCENTER_MEDIA_KEYS_BROKEN
-  else {
-#endif
-   mediaKeyTap = [[SPMediaKeyTap alloc] initWithDelegate:self];
-    if (PREF_KEY_BOOL(PLEASE_BIND_MEDIA)) {
-      BOOL canTapMediaKeys = [self requestInputMonitoringAccessIfNeeded];
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1090
-      BOOL hasAccessibilityTrust = YES;
-      if (@available(macOS 10.15, *)) {
-        hasAccessibilityTrust = YES;
-      } else if (@available(macOS 10.9, *)) {
-        if (!AXIsProcessTrusted()) {
-          NSDictionary *options = @{(__bridge id)kAXTrustedCheckOptionPrompt: @YES};
-          AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef)options);
-          hasAccessibilityTrust = AXIsProcessTrusted();
-        }
-      }
-      canTapMediaKeys = canTapMediaKeys && hasAccessibilityTrust;
-#endif
-      if (canTapMediaKeys) {
-        [mediaKeyTap startWatchingMediaKeys];
-      } else {
-        NSLog(@"Hermes: Input Monitoring permission missing; media keys disabled until granted.");
-        if ([self hasInputMonitoringAccess] == NO) {
-          [self presentInputMonitoringInstructions];
-        }
-      }
-    }
-#ifndef MPREMOTECOMMANDCENTER_MEDIA_KEYS_BROKEN
-  }
-#endif
-#endif
+  [self configureRemoteCommands];
+}
 
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self requestInputMonitoringReminderIfNeeded];
-  });
+- (MPRemoteCommandHandlerStatus)performRemoteCommandAction:(BOOL (^)(void))action {
+  __block BOOL handled = NO;
+  dispatch_block_t actionOnMainThread = ^{
+    handled = action();
+  };
+  if ([NSThread isMainThread]) {
+    actionOnMainThread();
+  } else {
+    dispatch_sync(dispatch_get_main_queue(), actionOnMainThread);
+  }
+  return handled ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusNoSuchContent;
+}
+
+- (void)configureRemoteCommands {
+  remoteCommandCenter = [MPRemoteCommandCenter sharedCommandCenter];
+  __weak typeof(self) weakSelf = self;
+
+  remoteCommandCenter.playCommand.enabled = YES;
+  [remoteCommandCenter.playCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent *event) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf == nil) {
+      return MPRemoteCommandHandlerStatusCommandFailed;
+    }
+    return [strongSelf performRemoteCommandAction:^BOOL{
+      if (strongSelf->playing == nil) {
+        return NO;
+      }
+      return [strongSelf play] || [strongSelf->playing isPlaying];
+    }];
+  }];
+
+  remoteCommandCenter.pauseCommand.enabled = YES;
+  [remoteCommandCenter.pauseCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent *event) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf == nil) {
+      return MPRemoteCommandHandlerStatusCommandFailed;
+    }
+    return [strongSelf performRemoteCommandAction:^BOOL{
+      return [strongSelf pause] || [strongSelf->playing isPaused];
+    }];
+  }];
+
+  remoteCommandCenter.togglePlayPauseCommand.enabled = YES;
+  [remoteCommandCenter.togglePlayPauseCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent *event) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf == nil) {
+      return MPRemoteCommandHandlerStatusCommandFailed;
+    }
+    return [strongSelf performRemoteCommandAction:^BOOL{
+      if (strongSelf->playing == nil) {
+        return NO;
+      }
+      [strongSelf playpause:nil];
+      return YES;
+    }];
+  }];
+
+  remoteCommandCenter.nextTrackCommand.enabled = YES;
+  [remoteCommandCenter.nextTrackCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent *event) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf == nil) {
+      return MPRemoteCommandHandlerStatusCommandFailed;
+    }
+    return [strongSelf performRemoteCommandAction:^BOOL{
+      if (strongSelf->playing == nil) {
+        return NO;
+      }
+      [strongSelf next:nil];
+      return YES;
+    }];
+  }];
+
+  [remoteCommandCenter.likeCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent *event) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf == nil) {
+      return MPRemoteCommandHandlerStatusCommandFailed;
+    }
+    return [strongSelf performRemoteCommandAction:^BOOL{
+      if (strongSelf->playing == nil || [strongSelf->playing playingSong] == nil) {
+        return NO;
+      }
+      [strongSelf like:nil];
+      return YES;
+    }];
+  }];
+  [remoteCommandCenter.dislikeCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent *event) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf == nil) {
+      return MPRemoteCommandHandlerStatusCommandFailed;
+    }
+    return [strongSelf performRemoteCommandAction:^BOOL{
+      if (strongSelf->playing == nil || [strongSelf->playing playingSong] == nil) {
+        return NO;
+      }
+      [strongSelf dislike:nil];
+      return YES;
+    }];
+  }];
 }
 
 - (void)configureTitlebarSidebarControlsForWindow:(NSWindow *)window {
@@ -688,35 +587,6 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
     }];
   [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
   progressUpdateTimer = timer;
-}
-
-/* see https://github.com/nevyn/SPMediaKeyTap */
-- (void) mediaKeyTap:(SPMediaKeyTap*)keyTap
-      receivedMediaKeyEvent:(NSEvent*)event {
-  assert([event type] == NSEventTypeSystemDefined &&
-         [event subtype] == SPSystemDefinedEventMediaKeys);
-
-  int keyCode = (([event data1] & 0xFFFF0000) >> 16);
-  int keyFlags = ([event data1] & 0x0000FFFF);
-  int keyState = (((keyFlags & 0xFF00) >> 8)) == 0xA;
-  if (keyState != 1) return;
-
-  switch (keyCode) {
-
-    case NX_KEYTYPE_PLAY:
-      [self playpause:nil];
-      return;
-
-    case NX_KEYTYPE_FAST:
-    case NX_KEYTYPE_NEXT:
-      [self next:nil];
-      return;
-
-    case NX_KEYTYPE_REWIND:
-    case NX_KEYTYPE_PREVIOUS:
-      [NSApp activateIgnoringOtherApps:NO];
-      return;
-  }
 }
 
 - (void) prepareFirst {
@@ -1055,10 +925,10 @@ void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction pr
 
 /* Toggle between playing and pausing */
 - (IBAction)playpause: (id) sender {
-  if ([playing isPaused]) {
-    [self play];
-  } else {
+  if ([playing isPlaying]) {
     [self pause];
+  } else {
+    [self play];
   }
 }
 

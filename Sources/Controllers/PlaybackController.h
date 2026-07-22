@@ -6,7 +6,6 @@
 
 @class Song;
 @class MPRemoteCommandCenter;
-@class SPMediaKeyTap;
 @class PlaybackSplitView;
 
 @protocol PlaybackStationModeService <NSObject>
@@ -14,9 +13,6 @@
 - (BOOL)fetchStationModesForStation:(Station *)station;
 - (BOOL)setMode:(NSString *)modeIdentifier forStation:(Station *)station;
 @end
-
-// XXX macOS 10.12.2 exposes media keys; 10.12.3 doesn't
-#define MPREMOTECOMMANDCENTER_MEDIA_KEYS_BROKEN 1
 
 @interface PlaybackController : NSObject <QLPreviewPanelDataSource, QLPreviewPanelDelegate, QLPreviewItem, NSUserInterfaceValidations> {
   IBOutlet NSProgressIndicator *songLoadingProgress;
@@ -63,7 +59,6 @@
   BOOL scrobbleSent;
   NSString *lastImgSrc;
   NSData *lastImg;
-  BOOL presentedInputMonitoringAlert;
   BOOL stationsPanelVisible;
   BOOL historyPanelVisible;
   id<PlaybackStationModeService> _stationModeService;
@@ -77,7 +72,6 @@
 @property BOOL pausedByScreenLock;
 
 @property (readonly) MPRemoteCommandCenter *remoteCommandCenter;
-@property (readonly) SPMediaKeyTap *mediaKeyTap;
 @property (nonatomic, strong) id<PlaybackStationModeService> stationModeService;
 
 + (void) setPlayOnStart: (BOOL)play;
@@ -118,17 +112,8 @@
 - (IBAction)increaseVolume:(id)sender;
 - (IBAction)decreaseVolume:(id)sender;
 - (IBAction)quickLookArt:(id)sender;
-- (BOOL)hasInputMonitoringAccess;
-- (void)presentInputMonitoringInstructions;
-- (void)presentInputMonitoringInstructionsAllowingRepeat;
-- (void)openInputMonitoringPreferences;
-- (void)requestInputMonitoringReminderIfNeeded;
 - (void)toggleStationsPanel;
 - (void)toggleHistoryPanel;
 - (void)showHistoryPanel;
-
-typedef bool (*HMSInputMonitoringAccessFunction)(void);
-void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction preflight,
-                                             HMSInputMonitoringAccessFunction request);
 
 @end

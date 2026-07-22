@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <MediaPlayer/MediaPlayer.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
 
@@ -11,8 +12,10 @@
 @class Pandora;
 
 @interface PlaybackController : NSObject
+@property(nonatomic, readonly) MPRemoteCommandCenter *remoteCommandCenter;
 - (BOOL)play;
 - (BOOL)pause;
+- (void)playpause:(id)sender;
 - (void)like:(id)sender;
 - (void)dislike:(id)sender;
 - (void)tired:(id)sender;
@@ -22,15 +25,12 @@
 - (void)restoreSongInfoVisibility;
 - (void)startUpdatingProgress;
 - (void)stopUpdatingProgress;
+- (void)configureRemoteCommands;
 @end
 
 
 @interface Pandora : NSObject
 @end
-
-typedef BOOL (*HMSInputMonitoringAccessFunction)(void);
-extern void HMSSetListenEventAccessFunctionPointers(HMSInputMonitoringAccessFunction preflight,
-                                                    HMSInputMonitoringAccessFunction request);
 
 @interface Song : NSObject
 @property(nonatomic, retain) NSNumber *nrating;
@@ -158,7 +158,6 @@ static id StubImageLoaderLoader(id self, SEL _cmd) {
 
 - (void)setUp {
   [super setUp];
-  [[NSUserDefaults standardUserDefaults] setBool:YES forKey:INPUT_MONITORING_REMINDER_ENABLED];
   [[NSUserDefaults standardUserDefaults] removeObjectForKey:SONG_INFO_VISIBLE];
   gCancelledArt = [NSMutableArray array];
   self.stubLoader = [[StubImageLoader alloc] init];
@@ -172,7 +171,6 @@ static id StubImageLoaderLoader(id self, SEL _cmd) {
 }
 
 - (void)tearDown {
-  [[NSUserDefaults standardUserDefaults] removeObjectForKey:INPUT_MONITORING_REMINDER_ENABLED];
   [[NSUserDefaults standardUserDefaults] removeObjectForKey:SONG_INFO_VISIBLE];
   Class loaderClass = NSClassFromString(@"ImageLoader");
   Method loaderMethod = class_getClassMethod(loaderClass, @selector(loader));
@@ -382,6 +380,41 @@ static id StubImageLoaderLoader(id self, SEL _cmd) {
 
   XCTAssertFalse(didPause);
   XCTAssertFalse(playing.pauseInvoked);
+}
+
+- (void)testPlayPauseStartsWhenPlaybackIsNotActive {
+  StubPlaying *playing = [[StubPlaying alloc] init];
+  TestPlaybackController *controller = [self controllerWithPlaying:playing
+                                                           pandora:[[StubPandora alloc] init]];
+
+  [controller playpause:nil];
+
+  XCTAssertTrue(playing.playInvoked);
+  XCTAssertFalse(playing.pauseInvoked);
+}
+
+- (void)testPlayPausePausesActivePlayback {
+  StubPlaying *playing = [[StubPlaying alloc] init];
+  playing.currentlyPlaying = YES;
+  TestPlaybackController *controller = [self controllerWithPlaying:playing
+                                                           pandora:[[StubPandora alloc] init]];
+
+  [controller playpause:nil];
+
+  XCTAssertTrue(playing.pauseInvoked);
+  XCTAssertFalse(playing.playInvoked);
+}
+
+- (void)testNativeMediaCommandsAreEnabled {
+  TestPlaybackController *controller = [[TestPlaybackController alloc] init];
+
+  [controller configureRemoteCommands];
+
+  XCTAssertNotNil(controller.remoteCommandCenter);
+  XCTAssertTrue(controller.remoteCommandCenter.playCommand.enabled);
+  XCTAssertTrue(controller.remoteCommandCenter.pauseCommand.enabled);
+  XCTAssertTrue(controller.remoteCommandCenter.togglePlayPauseCommand.enabled);
+  XCTAssertTrue(controller.remoteCommandCenter.nextTrackCommand.enabled);
 }
 
 - (void)testLikeRatesSongPositive {

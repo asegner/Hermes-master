@@ -19,8 +19,6 @@
 		1DDD58160DA1D0A300B32029 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1DDD58140DA1D0A300B32029 /* MainMenu.xib */; };
 		441C9F0D1CC80635000A0302 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9728D8A5158C3E7C00C078A4 /* AudioToolbox.framework */; };
 		441C9F0E1CC80AA0000A0302 /* ASPlaylist.m in Sources */ = {isa = PBXBuildFile; fileRef = FA99E25A15E4B7EA005AB6E6 /* ASPlaylist.m */; };
-		441C9F101CC815A1000A0302 /* NSObject+SPInvocationGrabbing.m in Sources */ = {isa = PBXBuildFile; fileRef = 843B578A19660680000898F2 /* NSObject+SPInvocationGrabbing.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		441C9F121CC815A1000A0302 /* SPMediaKeyTap.m in Sources */ = {isa = PBXBuildFile; fileRef = 9728D899158C3DA500C078A4 /* SPMediaKeyTap.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		441C9F131CC81A82000A0302 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9728D89C158C3E3C00C078A4 /* Carbon.framework */; };
 		441C9F161CC86A74000A0302 /* AudioStreamer.m in Sources */ = {isa = PBXBuildFile; fileRef = FACF0184149A713700D1FB73 /* AudioStreamer.m */; };
 		44310F8B18EB87AB0095359D /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 44310F8A18EB87AB0095359D /* Credits.rtf */; };
@@ -159,8 +157,6 @@
 		7D4EA0A22FB8C6A2007A1234 /* StationModeParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StationModeParser.m; sourceTree = "<group>"; };
 		7D4EA0A32FB8C6A2007A1234 /* HermesTests/StationModeParserTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HermesTests/StationModeParserTests.m; sourceTree = SOURCE_ROOT; };
 		7D8B2B5D2FCAF4F200729EEA /* HermesTests/StationsControllerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HermesTests/StationsControllerTests.m; sourceTree = SOURCE_ROOT; };
-		843B578919660680000898F2 /* NSObject+SPInvocationGrabbing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+SPInvocationGrabbing.h"; sourceTree = "<group>"; };
-		843B578A19660680000898F2 /* NSObject+SPInvocationGrabbing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+SPInvocationGrabbing.m"; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* ApolloGene-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "ApolloGene-Info.plist"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* ApolloGene.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ApolloGene.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		97177193159EAA7D00EE3355 /* cd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cd.png; sourceTree = "<group>"; };
@@ -172,8 +168,6 @@
 		971CC3981585DA11004D75BA /* NetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkConnection.h; sourceTree = "<group>"; };
 		971CC3991585DA11004D75BA /* NetworkConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetworkConnection.m; sourceTree = "<group>"; };
 		971CC3A01585DBD7004D75BA /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		9728D898158C3DA500C078A4 /* SPMediaKeyTap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMediaKeyTap.h; sourceTree = "<group>"; };
-		9728D899158C3DA500C078A4 /* SPMediaKeyTap.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = SPMediaKeyTap.m; sourceTree = "<group>"; tabWidth = 4; usesTabs = 1; };
 		9728D89C158C3E3C00C078A4 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		9728D8A5158C3E7C00C078A4 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		97539FAB158442A500D1E65C /* URLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = URLConnection.h; sourceTree = "<group>"; };
@@ -435,7 +429,6 @@
 			children = (
 				4436BF6C18F4DC1F00DDD578 /* blowfish */,
 				FA94E6E31368E5830063860C /* FMEngine */,
-				9728D887158C3D3100C078A4 /* SPMediaKeyTap */,
 			);
 			path = ImportedSources;
 			sourceTree = "<group>";
@@ -447,17 +440,6 @@
 				FA454684156604D100EE98C7 /* blowfish.h */,
 			);
 			path = blowfish;
-			sourceTree = "<group>";
-		};
-		9728D887158C3D3100C078A4 /* SPMediaKeyTap */ = {
-			isa = PBXGroup;
-			children = (
-				843B578919660680000898F2 /* NSObject+SPInvocationGrabbing.h */,
-				843B578A19660680000898F2 /* NSObject+SPInvocationGrabbing.m */,
-				9728D898158C3DA500C078A4 /* SPMediaKeyTap.h */,
-				9728D899158C3DA500C078A4 /* SPMediaKeyTap.m */,
-			);
-			path = SPMediaKeyTap;
 			sourceTree = "<group>";
 		};
 		B2A26AF01AE39E9F00ADD460 /* Views */ = {
@@ -749,8 +731,6 @@
 			files = (
 				C0D3A70130C0000000000001 /* ArtworkButton.m in Sources */,
 				C0D3A70230C0000000000001 /* PlaybackSplitView.m in Sources */,
-				441C9F101CC815A1000A0302 /* NSObject+SPInvocationGrabbing.m in Sources */,
-				441C9F121CC815A1000A0302 /* SPMediaKeyTap.m in Sources */,
 				441C9F0E1CC80AA0000A0302 /* ASPlaylist.m in Sources */,
 				E1200AA41CF2B015000D3215 /* LabelHoverShowFieldCell.m in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
