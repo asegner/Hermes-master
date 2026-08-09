@@ -1,29 +1,32 @@
 ApolloGenome a Hermes fork Pandora MacOS client for Intel and Apple Silicon
 ======
-<img width="828" height="734" alt="Screenshot 2025-07-18 at 3 08 02 PM" src="https://github.com/user-attachments/assets/b8fce636-3fb7-40de-b570-22a2865d5f0c" />
+<img width="529" height="394" alt="image" src="https://github.com/user-attachments/assets/972526c9-c868-4429-b1e6-1d0245481f55" />
 
-Picture ApolloGenome/Hermes 1.32b11 running on Macbook Air M1 Apple Silicon Sequoia 15.5
+Picture ApolloGenome/2.01b1 running on Macbook Air M1 Apple Silicon Tahoe 26
 
-Forked from Hermes built in XCode 16 on MacOS 15 Apple Silicon as Apple Silicon app for the universal notarized app
+Forked from Hermes built in XCode 26 on MacOS 26 Apple Silicon as Apple Silicon app for the universal notarized app
 
-Includes music genome project data when playing song information. Station modes not stable so were removed. Station mode display is reenabled.
+Includes music genome project data when playing song information(toggleable). Station modes added (note might not work on paid pandora plus versions)
 
-UI redesigned due to deprecation of drawers. Now with more modern flat layout. A lot of the UI bugs are from old UI in interface builder using constraints rather than modern programatic swift UI.
+UI redesigned due to deprecation of drawers. Now with more modern flat layout using nssplitviews. A lot of the UI bugs are from old UI in interface builder using constraints rather than modern programatic swift UI.
 
 A [Pandora](http://www.pandora.com/) client for macOS Intel and Apple Silicon.
 
 **Bug workarounds:**
 
-Known bug: The 2.0.0b1 refactor introduced a bug that can occasionaly cause audio skipping in the beginning  of a track from lost frames.
+Known bug: The 2.0.0b1 refactor introduced a bug that can occasionally cause audio skipping in the beginning  of a track from lost frames. *edit* the audio skipping bug is fixed in 2.0.1b1. Thanks to ASegner.
+
 Old behavior is the player would stop and throw an error to restart the playback from beginning. This should be fixed in 200b5.
 
 B10 and B11 have heightened security permissions. B11 has hardened runtime. Try downloading b9 and running it before be b10 and b11.
 
-Media keys in b11 and probably b10 will require heightened permissions accessibility and input monitoring enabled manually for Hermes after starting for the first time.
+*edit* media keys old code updated in 2.0.1b1. Thanks to ASegner again.
+Media keys in b11 and probably b10 will require heightened permissions accessibility and input monitoring enabled manually for Hermes after starting for the first time. 
 
 System Settings → Privacy & Security → Accessibility
 System Settings → Privacy & Security → Input Monitoring
 
+*edit* scroll views redesigned in 2.0.1b1. Thanks to ASegner again.
 If installing B11 and the scroll views for stations and history are not centered expand the window to fit them and restart they recenter on restart.
 
 For b11 adding a station has to be done manually from toolbar. At top menu click Pandora > New / Edit / Reload stations 
@@ -36,7 +39,9 @@ New delete station menu button causes UI glitch. Double click a station to play 
 
 email pw login bug should be fixed. Should be able to click login. Previously required tab and enter keys.
 
+
 ### THIS PROJECT IS MAINTAINED BUT VOLUNTEERS TO TEST ARE WELCOME
+Thanks to ASegner and MichaelFoss for contributing pull requests and everyone else for testing. 
 
 This means that bugs are documented and workarounds can be attempted.
 
@@ -55,19 +60,19 @@ If you would like to compile Hermes, continue reading.
 ### Develop against ApolloGenome
 
 - Adding stations type controls like Crowd Faves, Deep Cuts instead of only My Station default
-* stations mode is displayed but cannot yet be changed
+* stations mode can be changed but oddly only work on free pandora.
   
 - Possible features fixing proxy bugs better error message display
 * need proxy mode testers
 
-- Improve support for later MacOS currently written for 10.10+ rewrite for 11+ (implemented now), setup app sandboxing (not yet but hardened runtime enabled), app notarization(done), use new keychain code(done), 
+- Improve support for later MacOS currently written for 10.10+ rewrite for 11+ (implemented now important since Rosetta being removed future xcodes version target 11+), setup app sandboxing (not yet but hardened runtime enabled), app notarization(done), use new keychain code(done), 
 
-- Hard redesign for UI in swift instead of interface builder (probably not since Hermes is forked from pianobar written in C)(still pending to rewrite to use swift instead of interface builder)
-* new design using hstack vstack is much faster and less buggy can delay rewriting from xib to swiftui standard
+- Hard redesign for UI in swift instead of interface builder (probably not since Hermes is forked from pianobar written in C)(still pending to rewrite to use swift instead of interface builder),
+* New design using hstack vstack is much faster and less buggy. *edit again* Redesigned from the old drawer view to none, to stack view, to nssplitview to reproduce the old drawers in a modern format. Less need to update to swiftui.
 
 - Need to split large files like audiostreamer to make it easier to maintain. * Partly done for audiostreamer.
 
-- Need more unit tests. Partly done.
+- Need more unit tests. *mostly done)
 
 Below for Hermes
 Thanks to the suggestions by [blalor](https://github.com/blalor), there's a few
